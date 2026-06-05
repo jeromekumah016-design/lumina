@@ -57,3 +57,7 @@ Core game test + tsc clean.
 
 Run on your phone to test the actual native app.
 Miami data addition prepared - 6 properties ready to insert (Ocean Drive, Wynwood, Brickell, Coconut Grove, Design District, Little Havana)
+
+## GitHub
+
+This app was added to https://github.com/jeromekumah016-design/lumina via the Grok tooling (source + configs). Binary assets (PNG icons/splash) are referenced in app.json but may need to be re-added from local clone or regenerated via expo for full builds. After `git clone`, run `npm install` to restore node_modules and lockfile.
