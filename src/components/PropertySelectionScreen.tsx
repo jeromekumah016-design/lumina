@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,9 @@ import { router } from 'expo-router';
 import { propertyService } from '../services/propertyService';
 import { Property, Round, Member, Comment } from '../types/property';
 import { useLuminaState } from '../context/LuminaContext';
+import { trustService } from '../services/trustService';
+import { tripService } from '../services/tripService';
+import { GroupVotingStatus, RankedProperty } from '../services/propertyService';
 
 /**
  * PropertySelectionScreen = the core "game view" for collaborative property voting in a travel cycle.
@@ -66,6 +69,17 @@ export default function PropertySelectionScreen() {
   const [selectedProp, setSelectedProp] = useState<Property | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newCommentText, setNewCommentText] = useState('');
+
+  // Feature 1: live group-voting presence
+  const [groupVotingStatus, setGroupVotingStatus] = useState<GroupVotingStatus | null>(null);
+
+  // Feature 2: budget guardrails + ranked properties
+  const [groupBudget, setGroupBudget] = useState<number>(130);
+  const [rankedProperties, setRankedProperties] = useState<RankedProperty[]>([]);
+
+  // Feature 3: conduct gate + safety report
+  const [conductAccepted, setConductAccepted] = useState(true);
+  const [reportingProp, setReportingProp] = useState<Property | null>(null);
 
   // Animation shared values (reanimated)
   const modalTranslate = useSharedValue(400);
@@ -144,6 +158,30 @@ export default function PropertySelectionScreen() {
   useEffect(() => {
     refreshVoteCount();
   }, [properties, refreshVoteCount]);
+
+  // Feature 1: poll live group-voting status every 8 s
+  useEffect(() => {
+    let active = true;
+    propertyService.getGroupVotingStatus().then(s => { if (active) setGroupVotingStatus(s); });
+    const iv = setInterval(() => {
+      propertyService.simulateVoteProgress().then(s => { if (active) setGroupVotingStatus(s); });
+    }, 8000);
+    return () => { active = false; clearInterval(iv); };
+  }, []);
+
+  // Feature 2: rank properties whenever list or budget changes
+  useEffect(() => {
+    if (properties.length > 0) {
+      setRankedProperties(propertyService.rankProperties(properties, groupBudget));
+    }
+  }, [properties, groupBudget]);
+
+  // Feature 3: check conduct gate on mount
+  useEffect(() => {
+    trustService.isConductAccepted().then(ok => {
+      if (!ok) setConductAccepted(false);
+    });
+  }, []);
 
   // Modal enter/exit animations (reanimated)
   useEffect(() => {
@@ -250,6 +288,44 @@ export default function PropertySelectionScreen() {
     setViewMode('results');
   };
 
+  // Feature 3: safety report via Alert (no extra Modal needed)
+  const handleReport = (prop: Property) => {
+    setReportingProp(prop);
+    Alert.alert(
+      'Report Safety Concern',
+      `Report "${prop.title}" for a safety issue?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Report', style: 'destructive', onPress: async () => {
+            await trustService.reportSafety({ propertyId: prop.id, reason: 'Safety concern reported by user' });
+            Alert.alert('Reported', 'Thank you. Our safety team will review this.');
+          },
+        },
+      ]
+    );
+  };
+
+  // Feature 3: accept conduct code from banner
+  const handleAcceptConduct = async () => {
+    await trustService.acceptConductCode();
+    setConductAccepted(true);
+  };
+
+  // Feature 4: navigate to Trip Room with the winning property
+  const openTripRoom = () => {
+    if (!properties.length) return;
+    const winner = properties.reduce((best, p) => p.keepVotes > best.keepVotes ? p : best, properties[0]);
+    router.push({ pathname: '/trip-room', params: { city: currentCity, propId: winner.id } } as any);
+  };
+
+  // Feature 2: lookup map for ranked info (avoid re-iterating per card)
+  const rankMap = useMemo(() => {
+    const m: Record<string, RankedProperty> = {};
+    rankedProperties.forEach(r => { m[r.id] = r; });
+    return m;
+  }, [rankedProperties]);
+
   return (
     <View className="flex-1 bg-retro-cream border-4 border-black shadow-retro">
       {/* Header */}
@@ -271,6 +347,17 @@ export default function PropertySelectionScreen() {
       </View>
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }}>
+        {/* Feature 3: Conduct gate banner */}
+        {!conductAccepted && (
+          <View className="mx-4 mt-3 bg-amber-50 border border-amber-300 rounded-xl p-3">
+            <Text className="text-sm font-bold text-amber-800">Code of Conduct Required</Text>
+            <Text className="text-xs text-amber-700 mt-0.5">Review and accept our Code of Conduct to participate in group voting.</Text>
+            <Pressable onPress={handleAcceptConduct} className="mt-2 bg-amber-500 py-1.5 rounded-lg items-center">
+              <Text className="text-white text-sm font-semibold">Accept &amp; Continue ✓</Text>
+            </Pressable>
+          </View>
+        )}
+
         {/* City selector */}
         <View className="px-4 pt-3">
           <Text className="text-xs uppercase tracking-widest text-retro-dark mb-1.5">DESTINATION</Text>
@@ -292,6 +379,19 @@ export default function PropertySelectionScreen() {
                 <Text className={`font-semibold text-sm ${currentCity === city ? 'text-white' : 'text-gray-700'}`}>{city}</Text>
               </Pressable>
             ))}
+          </View>
+        </View>
+
+        {/* Feature 2: Budget guardrail control */}
+        <View className="px-4 mt-2 flex-row items-center justify-between">
+          <Text className="text-xs text-retro-dark">Budget cap: ${groupBudget}/person/night</Text>
+          <View className="flex-row gap-2">
+            <Pressable onPress={() => setGroupBudget(b => Math.max(50, b - 10))} className="bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
+              <Text className="text-sm font-bold text-gray-600">−</Text>
+            </Pressable>
+            <Pressable onPress={() => setGroupBudget(b => b + 10)} className="bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
+              <Text className="text-sm font-bold text-gray-600">+</Text>
+            </Pressable>
           </View>
         </View>
 
@@ -318,6 +418,19 @@ export default function PropertySelectionScreen() {
             </View>
             <Text className="ml-2 text-xs text-retro-dark">4 men + 7 women choosing together</Text>
           </View>
+
+          {/* Feature 1: Live voting progress bar */}
+          {groupVotingStatus && (
+            <View className="mt-1.5 flex-row items-center gap-2">
+              <View className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <View
+                  className="h-full bg-emerald-500 rounded-full"
+                  style={{ width: `${(groupVotingStatus.votedCount / groupVotingStatus.totalMembers) * 100}%` }}
+                />
+              </View>
+              <Text className="text-[11px] text-retro-dark">{groupVotingStatus.votedCount}/{groupVotingStatus.totalMembers} voted</Text>
+            </View>
+          )}
 
           <View className="mt-1 flex-row items-center">
             <Text className="text-[11px] text-retro-dark">Everyone has 2 votes • {userVoteCount}/2 used</Text>
@@ -359,6 +472,13 @@ export default function PropertySelectionScreen() {
                 <View className="p-3">
                   <Text className="font-semibold text-base text-[#0F172A]">{p.title}</Text>
                   <Text className="text-xs text-retro-dark">{p.location.city}, {p.location.country}</Text>
+                  {/* Feature 2: recommendation badges */}
+                  {rankMap[p.id]?.recommendation === 'top-pick' && (
+                    <Text className="text-[11px] text-amber-600 font-medium mt-0.5">🏆 Group's top pick</Text>
+                  )}
+                  {rankMap[p.id]?.isOverBudget && (
+                    <Text className="text-[11px] text-rose-600 font-medium mt-0.5">⚠️ Over ${groupBudget}/night budget</Text>
+                  )}
 
                   <View className="mt-2 flex-row items-center justify-between">
                     <View className="flex-row gap-2">
@@ -379,10 +499,16 @@ export default function PropertySelectionScreen() {
                       </Pressable>
                     </View>
 
-                    <Pressable onPress={() => openComments(p)} className="flex-row items-center">
-                      <Ionicons name="chatbubble-outline" size={14} color="#64748B" />
-                      <Text className="ml-1 text-xs text-retro-dark">{p.commentCount}</Text>
-                    </Pressable>
+                    <View className="flex-row items-center gap-2">
+                      <Pressable onPress={() => openComments(p)} className="flex-row items-center">
+                        <Ionicons name="chatbubble-outline" size={14} color="#64748B" />
+                        <Text className="ml-1 text-xs text-retro-dark">{p.commentCount}</Text>
+                      </Pressable>
+                      {/* Feature 3: report button */}
+                      <Pressable onPress={() => handleReport(p)}>
+                        <Ionicons name="flag-outline" size={14} color="#CBD5E1" />
+                      </Pressable>
+                    </View>
                   </View>
 
                   {p.myVote && <View className="mt-1 h-0.5 bg-[#0284C8] w-8" />}
@@ -404,9 +530,15 @@ export default function PropertySelectionScreen() {
               </Pressable>
             </View>
           ) : (
-            <Pressable onPress={() => { setViewMode('vote'); setEliminatedIds(new Set()); setResultsSummary(null); }} className="bg-[#0284C8] py-3 rounded-2xl items-center">
-              <Text className="text-white font-semibold">Back to Voting</Text>
-            </Pressable>
+            <View>
+              <Pressable onPress={() => { setViewMode('vote'); setEliminatedIds(new Set()); setResultsSummary(null); }} className="bg-[#0284C8] py-3 rounded-2xl items-center">
+                <Text className="text-white font-semibold">Back to Voting</Text>
+              </Pressable>
+              {/* Feature 4: Trip Room — opens once group converges on a winner */}
+              <Pressable onPress={openTripRoom} className="mt-2 bg-amber-500 py-3 rounded-2xl items-center">
+                <Text className="text-white font-semibold">Open Trip Room 🏠</Text>
+              </Pressable>
+            </View>
           )}
           {resultsSummary && <Text className="mt-2 text-center text-xs text-retro-dark">{resultsSummary}</Text>}
         </View>

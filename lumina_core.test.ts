@@ -694,3 +694,332 @@ describe('Restart Persistence, City Guard, Comment Property Validation, Round Co
     expect(after.currentDay).toBe(Math.min(before.totalDays, before.currentDay + 1));
   });
 });
+
+// ───────────────────────────────────────────────────────────────────────────
+// Suite 6 — Feature 1: Live Group Voting Status
+// ───────────────────────────────────────────────────────────────────────────
+describe('Feature 1 — Live Group Voting Status', () => {
+  let svc: Svc;
+
+  beforeEach(() => {
+    jest.resetModules();
+    svc = freshService();
+  });
+
+  it('getGroupVotingStatus returns totalMembers = 11', async () => {
+    const status = await svc.getGroupVotingStatus();
+    expect(status.totalMembers).toBe(11);
+  });
+
+  it('getGroupVotingStatus starts with votedCount = 4 (demo seed)', async () => {
+    const status = await svc.getGroupVotingStatus();
+    expect(status.votedCount).toBe(4);
+  });
+
+  it('memberStatuses has length equal to totalMembers', async () => {
+    const status = await svc.getGroupVotingStatus();
+    expect(status.memberStatuses).toHaveLength(status.totalMembers);
+  });
+
+  it('first 4 memberStatuses have hasVoted=true, rest false initially', async () => {
+    const status = await svc.getGroupVotingStatus();
+    const voted = status.memberStatuses.filter(m => m.hasVoted);
+    const notVoted = status.memberStatuses.filter(m => !m.hasVoted);
+    expect(voted).toHaveLength(4);
+    expect(notVoted).toHaveLength(7);
+  });
+
+  it('simulateVoteProgress increments votedCount by 1', async () => {
+    const before = await svc.getGroupVotingStatus();
+    const after = await svc.simulateVoteProgress();
+    expect(after.votedCount).toBe(before.votedCount + 1);
+  });
+
+  it('simulateVoteProgress caps at totalMembers (never exceeds 11)', async () => {
+    // Call simulateVoteProgress many times
+    for (let i = 0; i < 20; i++) {
+      await svc.simulateVoteProgress();
+    }
+    const status = await svc.getGroupVotingStatus();
+    expect(status.votedCount).toBeLessThanOrEqual(status.totalMembers);
+    expect(status.votedCount).toBe(status.totalMembers);
+  });
+
+  it('each memberStatus entry has id, name, and hasVoted fields', async () => {
+    const status = await svc.getGroupVotingStatus();
+    for (const m of status.memberStatuses) {
+      expect(typeof m.id).toBe('string');
+      expect(typeof m.name).toBe('string');
+      expect(typeof m.hasVoted).toBe('boolean');
+    }
+  });
+});
+
+// ───────────────────────────────────────────────────────────────────────────
+// Suite 7 — Feature 2: Smart Recommendations + Budget Guardrails
+// ───────────────────────────────────────────────────────────────────────────
+describe('Feature 2 — Smart Recommendations & Budget Guardrails', () => {
+  let svc: Svc;
+
+  beforeEach(() => {
+    jest.resetModules();
+    svc = freshService();
+  });
+
+  it('getGroupBudget returns default 130', () => {
+    expect(svc.getGroupBudget()).toBe(130);
+  });
+
+  it('setGroupBudget updates the budget', () => {
+    svc.setGroupBudget(200);
+    expect(svc.getGroupBudget()).toBe(200);
+  });
+
+  it('setGroupBudget clamps negative values to 0', () => {
+    svc.setGroupBudget(-50);
+    expect(svc.getGroupBudget()).toBe(0);
+  });
+
+  it('rankProperties returns an array of the same length as input', async () => {
+    const props = await svc.getProperties();
+    const ranked = svc.rankProperties(props, 130);
+    expect(ranked).toHaveLength(props.length);
+  });
+
+  it('rankProperties sorts by score descending (keepVotes - eliminateVotes + fav bonus)', async () => {
+    const props = await svc.getProperties();
+    const ranked = svc.rankProperties(props, 9999); // high budget so no over-budget
+    for (let i = 1; i < ranked.length; i++) {
+      expect(ranked[i - 1].score).toBeGreaterThanOrEqual(ranked[i].score);
+    }
+  });
+
+  it('top-ranked property (chi-3: 31k-12e=19) gets recommendation="top-pick"', async () => {
+    const props = await svc.getProperties();
+    const ranked = svc.rankProperties(props, 9999);
+    expect(ranked[0].recommendation).toBe('top-pick');
+    expect(ranked[0].id).toBe('chi-3'); // 31-12=19
+  });
+
+  it('properties with pricePerPerson > budget are flagged isOverBudget=true', async () => {
+    const props = await svc.getProperties();
+    const ranked = svc.rankProperties(props, 90); // chi-2($120), chi-4($150), chi-6($110) are over
+    const overBudget = ranked.filter(r => r.isOverBudget);
+    expect(overBudget.length).toBeGreaterThan(0);
+    overBudget.forEach(r => expect(r.pricePerPerson).toBeGreaterThan(90));
+  });
+
+  it('properties within budget are flagged isOverBudget=false', async () => {
+    const props = await svc.getProperties();
+    const ranked = svc.rankProperties(props, 9999);
+    ranked.forEach(r => expect(r.isOverBudget).toBe(false));
+  });
+
+  it('non-top-pick over-budget properties get recommendation="budget-warning"', async () => {
+    const props = await svc.getProperties();
+    // Set budget below all prices so every non-top-pick is over budget
+    const ranked = svc.rankProperties(props, 0);
+    // Top pick keeps "top-pick" even if over budget; all others should get "budget-warning"
+    const warnings = ranked.filter(r => r.recommendation === 'budget-warning');
+    expect(warnings.length).toBeGreaterThan(0);
+    warnings.forEach(r => expect(r.isOverBudget).toBe(true));
+  });
+
+  it('rankProperties is a pure function — does not mutate the input array', async () => {
+    const props = await svc.getProperties();
+    const idsBefore = props.map(p => p.id);
+    svc.rankProperties(props, 130);
+    const idsAfter = props.map(p => p.id);
+    expect(idsAfter).toEqual(idsBefore);
+  });
+});
+
+// ───────────────────────────────────────────────────────────────────────────
+// Suite 8 — Feature 3: Trust Layer (trustService)
+// ───────────────────────────────────────────────────────────────────────────
+describe('Feature 3 — Trust Layer', () => {
+  type TrustSvc = typeof import('./src/services/trustService').trustService;
+  let trust: TrustSvc;
+
+  beforeEach(() => {
+    jest.resetModules();
+    trust = require('./src/services/trustService').trustService;
+  });
+
+  it('isConductAccepted returns false by default (no AsyncStorage entry)', async () => {
+    const accepted = await trust.isConductAccepted();
+    expect(accepted).toBe(false);
+  });
+
+  it('acceptConductCode persists acceptance — subsequent isConductAccepted returns true', async () => {
+    await trust.acceptConductCode();
+    const accepted = await trust.isConductAccepted();
+    expect(accepted).toBe(true);
+  });
+
+  it('getVerificationBadges returns ID badge for member u1 (index 1)', () => {
+    const badges = trust.getVerificationBadges('u1');
+    const types = badges.map(b => b.type);
+    expect(types).toContain('ID');
+  });
+
+  it('getVerificationBadges returns BACKGROUND badge for member u3 (index 3)', () => {
+    const badges = trust.getVerificationBadges('u3');
+    const types = badges.map(b => b.type);
+    expect(types).toContain('BACKGROUND');
+  });
+
+  it('getVerificationBadges returns no BACKGROUND badge for member u7 (index 7 > 4)', () => {
+    const badges = trust.getVerificationBadges('u7');
+    const types = badges.map(b => b.type);
+    expect(types).not.toContain('BACKGROUND');
+  });
+
+  it('getVerificationBadges returns empty array for member u11 (index 11 > 6)', () => {
+    const badges = trust.getVerificationBadges('u11');
+    expect(badges).toHaveLength(0);
+  });
+
+  it('reportSafety persists report and returns entry with reportedAt timestamp', async () => {
+    const report = await trust.reportSafety({ propertyId: 'chi-1', reason: 'Suspicious listing' });
+    expect(report.propertyId).toBe('chi-1');
+    expect(report.reason).toBe('Suspicious listing');
+    expect(typeof report.reportedAt).toBe('string');
+    expect(report.reportedAt.length).toBeGreaterThan(0);
+  });
+
+  it('getSafetyReports returns all previously submitted reports', async () => {
+    await trust.reportSafety({ propertyId: 'chi-1', reason: 'Report A' });
+    await trust.reportSafety({ propertyId: 'chi-2', reason: 'Report B' });
+    const reports = await trust.getSafetyReports();
+    expect(reports).toHaveLength(2);
+    expect(reports.map(r => r.reason)).toEqual(expect.arrayContaining(['Report A', 'Report B']));
+  });
+
+  it('getSafetyReports returns empty array before any reports', async () => {
+    const reports = await trust.getSafetyReports();
+    expect(reports).toHaveLength(0);
+  });
+});
+
+// ───────────────────────────────────────────────────────────────────────────
+// Suite 9 — Feature 4: Trip Room Service (tripService)
+// ───────────────────────────────────────────────────────────────────────────
+describe('Feature 4 — Trip Room Service', () => {
+  type TripSvc = typeof import('./src/services/tripService').tripService;
+  let trip: TripSvc;
+
+  beforeEach(() => {
+    jest.resetModules();
+    trip = require('./src/services/tripService').tripService;
+  });
+
+  // ── getWinningProperty ───────────────────────────────────────────────────
+  it('getWinningProperty returns null for an empty array', () => {
+    expect(trip.getWinningProperty([])).toBeNull();
+  });
+
+  it('getWinningProperty returns the single element for a one-item array', () => {
+    const svc = freshService();
+    const mockProp = { id: 'test', keepVotes: 10 } as any;
+    expect(trip.getWinningProperty([mockProp])).toBe(mockProp);
+  });
+
+  it('getWinningProperty returns the property with the highest keepVotes', () => {
+    const props = [
+      { id: 'a', keepVotes: 5 },
+      { id: 'b', keepVotes: 20 },
+      { id: 'c', keepVotes: 12 },
+    ] as any[];
+    expect(trip.getWinningProperty(props)!.id).toBe('b');
+  });
+
+  // ── getTripItinerary ─────────────────────────────────────────────────────
+  it('getTripItinerary returns 5 seed items for a fresh Chicago session', async () => {
+    const itin = await trip.getTripItinerary('Chicago');
+    expect(itin).toHaveLength(5);
+  });
+
+  it('every itinerary item has id, day, time, activity, location fields', async () => {
+    const itin = await trip.getTripItinerary('Chicago');
+    for (const item of itin) {
+      expect(typeof item.id).toBe('string');
+      expect(typeof item.day).toBe('number');
+      expect(typeof item.time).toBe('string');
+      expect(typeof item.activity).toBe('string');
+      expect(typeof item.location).toBe('string');
+    }
+  });
+
+  it('addItineraryItem adds a new item and returns it with an id', async () => {
+    const item = await trip.addItineraryItem('Chicago', {
+      day: 2,
+      time: '15:00',
+      activity: 'Kayaking',
+      location: 'Lakefront',
+    });
+    expect(typeof item.id).toBe('string');
+    expect(item.activity).toBe('Kayaking');
+    expect(item.day).toBe(2);
+  });
+
+  it('getTripItinerary after addItineraryItem reflects the new item', async () => {
+    await trip.addItineraryItem('Chicago', { day: 1, time: '08:00', activity: 'Morning Yoga', location: 'Rooftop' });
+    const itin = await trip.getTripItinerary('Chicago');
+    expect(itin.some(i => i.activity === 'Morning Yoga')).toBe(true);
+  });
+
+  // ── getTripCosts ─────────────────────────────────────────────────────────
+  it('getTripCosts returns 3 seed costs for a fresh Chicago session', async () => {
+    const costs = await trip.getTripCosts('Chicago');
+    expect(costs).toHaveLength(3);
+  });
+
+  it('addCostItem adds a new cost entry', async () => {
+    const item = await trip.addCostItem('Chicago', { description: 'Boat rental', amount: 300, paidBy: 'Noah' });
+    expect(item.description).toBe('Boat rental');
+    expect(item.amount).toBe(300);
+    expect(item.paidBy).toBe('Noah');
+  });
+
+  // ── computeCostSplits ────────────────────────────────────────────────────
+  it('computeCostSplits returns empty array for 0 members', () => {
+    const costs = [{ id: 'x', description: 'Test', amount: 100, paidBy: 'Alice' }];
+    expect(trip.computeCostSplits(costs, 0)).toHaveLength(0);
+  });
+
+  it('computeCostSplits returns empty array for empty cost list', () => {
+    expect(trip.computeCostSplits([], 11)).toHaveLength(0);
+  });
+
+  it('computeCostSplits returns one entry per cost item', () => {
+    const costs = [
+      { id: '1', description: 'A', amount: 110, paidBy: 'Emma' },
+      { id: '2', description: 'B', amount: 220, paidBy: 'Liam' },
+    ];
+    const splits = trip.computeCostSplits(costs, 11);
+    expect(splits).toHaveLength(2);
+  });
+
+  // ── getTotalPerPerson ────────────────────────────────────────────────────
+  it('getTotalPerPerson correctly divides total cost across members', () => {
+    const costs = [
+      { id: '1', description: 'A', amount: 1100, paidBy: 'Emma' },
+    ];
+    const perPerson = trip.getTotalPerPerson(costs, 11);
+    expect(perPerson).toBe(100);
+  });
+
+  it('getTotalPerPerson returns 0 for 0 members', () => {
+    const costs = [{ id: '1', description: 'A', amount: 500, paidBy: 'Emma' }];
+    expect(trip.getTotalPerPerson(costs, 0)).toBe(0);
+  });
+
+  it('getTotalPerPerson sums multiple cost items correctly', () => {
+    const costs = [
+      { id: '1', description: 'A', amount: 550, paidBy: 'Emma' },
+      { id: '2', description: 'B', amount: 550, paidBy: 'Liam' },
+    ];
+    expect(trip.getTotalPerPerson(costs, 11)).toBe(100);
+  });
+});

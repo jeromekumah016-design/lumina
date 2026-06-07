@@ -1,6 +1,20 @@
 import { Property, Round, Member, Comment } from '../types/property';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// ─── Feature 1: live group-voting status ───────────────────────────────────
+export type GroupVotingStatus = {
+  votedCount: number;
+  totalMembers: number;
+  memberStatuses: { id: string; name: string; hasVoted: boolean }[];
+};
+
+// ─── Feature 2: smart recommendations + budget ─────────────────────────────
+export type RankedProperty = Property & {
+  score: number;
+  isOverBudget: boolean;
+  recommendation: 'top-pick' | 'budget-warning' | null;
+};
+
 /**
  * Mock data layer for the Property Selection "game" (collaborative keep/eliminate voting).
  * 
@@ -264,6 +278,12 @@ const mockPropertiesByCity: Record<string, Property[]> = {
 
 let currentCity = 'Chicago';
 
+// Feature 1: simulated group-voting presence (resets on module load)
+let _simulatedVotedCount = 4; // demo starts 4/11 voted
+
+// Feature 2: group budget cap ($/person/night)
+let _groupBudget = 130;
+
 const getStorageKey = (city: string, propId: string, field: string) => `lumina:${city}:${propId}:${field}`;
 
 async function loadPersisted(prop: Property, city: string): Promise<Property> {
@@ -476,6 +496,45 @@ export const propertyService = {
     }
 
     return newComment;
+  },
+
+  // ── Feature 1: Group voting presence ──────────────────────────────────────
+  async getGroupVotingStatus(): Promise<GroupVotingStatus> {
+    const statuses = mockMembers.map((m, i) => ({
+      id: m.id,
+      name: m.name,
+      hasVoted: i < _simulatedVotedCount,
+    }));
+    return { votedCount: _simulatedVotedCount, totalMembers: mockMembers.length, memberStatuses: statuses };
+  },
+
+  async simulateVoteProgress(): Promise<GroupVotingStatus> {
+    if (_simulatedVotedCount < mockMembers.length) _simulatedVotedCount++;
+    return this.getGroupVotingStatus();
+  },
+
+  // ── Feature 2: Smart recommendations + budget ─────────────────────────────
+  getGroupBudget(): number {
+    return _groupBudget;
+  },
+
+  setGroupBudget(budget: number): void {
+    _groupBudget = Math.max(0, budget);
+  },
+
+  rankProperties(props: Property[], budget?: number): RankedProperty[] {
+    const cap = budget !== undefined ? budget : _groupBudget;
+    const scored = props.map(p => ({
+      ...p,
+      score: p.keepVotes - p.eliminateVotes + (p.isFavorited ? 5 : 0),
+      isOverBudget: p.pricePerPerson > cap,
+      recommendation: null as RankedProperty['recommendation'],
+    }));
+    scored.sort((a, b) => b.score - a.score);
+    // Mark top pick (highest score, regardless of budget) then budget warnings
+    if (scored.length > 0) scored[0].recommendation = 'top-pick';
+    scored.forEach(r => { if (r.isOverBudget && r.recommendation !== 'top-pick') r.recommendation = 'budget-warning'; });
+    return scored;
   },
 
   // --- Round / elimination helpers for results view ---
