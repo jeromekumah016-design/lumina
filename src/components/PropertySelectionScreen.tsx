@@ -243,7 +243,6 @@ export default function PropertySelectionScreen() {
   // Compute results on demand (top keep, bottom elim)
   const computeResults = () => {
     const sortedByKeep = [...properties].sort((a, b) => b.keepVotes - a.keepVotes);
-    const top3 = sortedByKeep.slice(0, 3).map(p => p.id);
     const bottom = [...properties].sort((a, b) => b.eliminateVotes - a.eliminateVotes).slice(0, 3).map(p => p.id);
     const summary = `Top picks: ${sortedByKeep.slice(0,3).map(p=>p.title).join(', ')}. Bottom elims: ${bottom.length} properties.`;
     setEliminatedIds(new Set(bottom));
@@ -332,7 +331,6 @@ export default function PropertySelectionScreen() {
         <View className="px-4 pt-4" style={gridAnimStyle}>
           {properties.map((p) => {
             const isElim = eliminatedIds.has(p.id);
-            const isTop = viewMode === 'results' && !isElim;
             return (
               <Pressable
                 key={p.id}

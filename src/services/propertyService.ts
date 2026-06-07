@@ -269,13 +269,18 @@ const getStorageKey = (city: string, propId: string, field: string) => `lumina:$
 async function loadPersisted(prop: Property, city: string): Promise<Property> {
   const myVoteStr = await AsyncStorage.getItem(getStorageKey(city, prop.id, 'myVote'));
   const favStr = await AsyncStorage.getItem(getStorageKey(city, prop.id, 'isFavorited'));
-  if (myVoteStr) prop.myVote = myVoteStr as 'keep' | 'eliminate' | null;
+  if (myVoteStr === 'keep' || myVoteStr === 'eliminate') prop.myVote = myVoteStr;
+  else if (myVoteStr === 'none') prop.myVote = null; // explicitly cleared in a prior session
   if (favStr) prop.isFavorited = favStr === 'true';
   return prop;
 }
 
 async function persistVote(city: string, propId: string, vote: 'keep' | 'eliminate' | null) {
-  await AsyncStorage.setItem(getStorageKey(city, propId, 'myVote'), vote || '');
+  const key = getStorageKey(city, propId, 'myVote');
+  // Store 'none' (not remove) so that explicitly cleared seed votes remain
+  // cleared after an app restart — removeItem would leave no key, causing
+  // loadPersisted to fall back to the seed value and resurrect the vote.
+  await AsyncStorage.setItem(key, vote === null ? 'none' : vote);
 }
 
 async function persistFavorite(city: string, propId: string, fav: boolean) {
@@ -380,15 +385,14 @@ export const propertyService = {
   },
 
   async setCurrentCity(city: string): Promise<void> {
-    if (mockPropertiesByCity[city]) {
-      currentCity = city;
-    } else {
-      currentCity = 'Chicago';
+    if (!mockPropertiesByCity[city]) {
+      throw new Error('Unknown city: ' + city);
     }
+    currentCity = city;
   },
 
   async getCurrentRound(): Promise<Round> {
-    return currentRound;
+    return { ...currentRound };
   },
 
   async getMembers(): Promise<Member[]> {
@@ -403,8 +407,8 @@ export const propertyService = {
 
   /** Returns number of active votes the current demo user has cast (for "2 votes" limit UI). */
   async getUserVoteCount(): Promise<number> {
-    const list = mockPropertiesByCity[currentCity] || [];
-    return list.filter((p) => p.myVote != null).length;
+    const props = await this.getProperties();
+    return props.filter((p) => p.myVote != null).length;
   },
 
   async castVote(propertyId: string, vote: 'keep' | 'eliminate' | null): Promise<Property> {
@@ -452,6 +456,9 @@ export const propertyService = {
   },
 
   async addComment(propertyId: string, text: string): Promise<Comment> {
+    if (!text.trim()) throw new Error('Comment text cannot be empty');
+    const list = mockPropertiesByCity[currentCity] || [];
+    if (!list.find((p) => p.id === propertyId)) throw new Error('Property not found');
     const existing = await loadComments(currentCity, propertyId);
     const newComment: Comment = {
       id: 'c' + Date.now().toString(36),
@@ -463,7 +470,6 @@ export const propertyService = {
     await saveComments(currentCity, propertyId, updated);
 
     // Keep the Property's commentCount in sync (used by cards)
-    const list = mockPropertiesByCity[currentCity] || [];
     const p = list.find((pp) => pp.id === propertyId);
     if (p) {
       p.commentCount = (p.commentCount || 0) + 1;
