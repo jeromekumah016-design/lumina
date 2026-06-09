@@ -418,7 +418,7 @@ export const propertyService = {
       const activeCount = list.filter((p) => p.myVote != null).length;
       const alreadyVotedHere = prop.myVote != null;
       if (!alreadyVotedHere && activeCount >= 2) {
-        // Limit reached — return unchanged so UI can show message/disable
+        // Limit reached â return unchanged so UI can show message/disable
         return { ...prop };
       }
     }
@@ -479,4 +479,31 @@ export const propertyService = {
     currentRound.deadline = new Date(Date.now() + 1000 * 60 * 60 * 18 + 1000 * 60 * 30).toISOString();
     return { ...currentRound };
   },
+  /**
+   * FIX #2: Full in-memory + AsyncStorage reset for demo.
+   * Called by LuminaContext.resetAllDemoData so property votes/favorites/comments
+   * are wiped alongside user state.
+   */
+  async resetAll(): Promise<void> {
+    // 1. Reset in-memory mock data (votes, favorites)
+    for (const city of Object.keys(mockPropertiesByCity)) {
+      for (const prop of mockPropertiesByCity[city]) {
+        prop.myVote = null;
+        prop.isFavorited = false;
+      }
+    }
+    // 2. Reset runtime comments store back to seed data
+    for (const city of Object.keys(commentsStore)) {
+      commentsStore[city] = JSON.parse(JSON.stringify(seedComments[city] || {}));
+    }
+    // 3. Wipe all lumina: AsyncStorage keys
+    try {
+      const allKeys = await AsyncStorage.getAllKeys();
+      const luminaKeys = allKeys.filter((k) => k.startsWith('lumina:'));
+      if (luminaKeys.length > 0) await AsyncStorage.multiRemove(luminaKeys);
+    } catch (e) {
+      console.warn('propertyService.resetAll: AsyncStorage wipe failed', e);
+    }
+  },
+
 };
