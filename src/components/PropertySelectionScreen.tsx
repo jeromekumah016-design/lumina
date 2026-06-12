@@ -441,7 +441,8 @@ export default function PropertySelectionScreen() {
         </View>
 
         {/* Properties grid */}
-        <View className="px-4 pt-4" style={gridAnimStyle}>
+        <View className="px-4 pt-4">
+          <Animated.View style={gridAnimStyle}>
           {properties.map((p) => {
             const isElim = eliminatedIds.has(p.id);
             return (
@@ -458,9 +459,10 @@ export default function PropertySelectionScreen() {
                   <Pressable
                     onPress={() => handleToggleFavorite(p.id)}
                     className="absolute top-3 right-3 bg-white/90 border border-black p-1.5 rounded-full"
-                    style={heartAnimStyle}
                   >
-                    <Ionicons name={p.isFavorited ? 'heart' : 'heart-outline'} size={16} color={p.isFavorited ? '#e11d48' : '#64748B'} />
+                    <Animated.View style={heartAnimStyle}>
+                      <Ionicons name={p.isFavorited ? 'heart' : 'heart-outline'} size={16} color={p.isFavorited ? '#e11d48' : '#64748B'} />
+                    </Animated.View>
                   </Pressable>
                   {viewMode === 'results' && isElim && (
                     <View className="absolute inset-0 bg-black/60 items-center justify-center">
@@ -516,6 +518,7 @@ export default function PropertySelectionScreen() {
               </Pressable>
             );
           })}
+          </Animated.View>
         </View>
 
         {/* Bottom actions */}
@@ -582,11 +585,11 @@ export default function PropertySelectionScreen() {
                 <Pressable onPress={submitComment} className="bg-[#0284C8] px-4 rounded items-center justify-center">
                   <Text className="text-white font-semibold">Send</Text>
                 </Pressable>
-              </Pressable>
-            </View>
-          </KeyboardAvoidingView>
+              </View>
+            </KeyboardAvoidingView>
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
-    </Modal>
+      </Modal>
+    </View>
   );
 }
