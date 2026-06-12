@@ -26,6 +26,8 @@
 
 // ─── helpers ───────────────────────────────────────────────────────────────
 
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+
 /** Load a fresh propertyService instance (fresh module state each call). */
 function freshService() {
   // Must be called AFTER jest.resetModules() to get a new module instance.
