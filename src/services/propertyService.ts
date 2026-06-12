@@ -442,7 +442,7 @@ export const propertyService = {
       const activeCount = list.filter((p) => p.myVote != null).length;
       const alreadyVotedHere = prop.myVote != null;
       if (!alreadyVotedHere && activeCount >= 2) {
-        // Limit reached â return unchanged so UI can show message/disable
+        // Limit reached - return unchanged so UI can show message/disable
         return { ...prop };
       }
     }
