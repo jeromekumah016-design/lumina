@@ -121,24 +121,24 @@ export default function OnboardingScreen() {
           <View className="flex-1 px-4">
             <View className="items-center mt-6">
               <View className="flex-row items-center">
-                <Text className="text-4xl font-semibold text-[#1E40AF]">Lumina</Text>
-                <Text className="text-[#F4C95F] text-2xl ml-1 -mt-1">✦</Text>
+                <Text className="text-4xl font-extrabold tracking-tight text-retro-ink">Lumina</Text>
+                <Text className="text-retro-amber text-2xl ml-1 -mt-1">✦</Text>
               </View>
               <Text className="text-retro-dark mt-1">Social travel, reimagined.</Text>
             </View>
 
-            <Text className="mt-8 text-xl font-semibold text-[#0F172A] text-center">
+            <Text className="mt-8 text-xl font-extrabold text-retro-ink text-center">
               Real friendships.{'\n'}Real weekends.{'\n'}In real life.
             </Text>
 
-            <View className="mt-6 bg-[#DBEAFE] rounded-2xl p-4">
-              <Text className="text-[#0C4A6E] text-[13px] leading-relaxed">
+            <View className="mt-6 bg-sky-100 border-2 border-black shadow-retro-sm rounded-2xl p-4">
+              <Text className="text-retro-ink text-[13px] leading-relaxed">
                 Lumina is a paid membership social club that organizes small-group weekend getaways.
                 Members are matched into curated groups of{' '}
                 <Text className="font-semibold">exactly 4 men + 7 women (11 total)</Text> plus 1-2
                 handlers, and travel together to a booked vacation rental for the weekend.
               </Text>
-              <Text className="text-[#0C4A6E] text-[12px] mt-2 font-medium">
+              <Text className="text-retro-ink text-[12px] mt-2 font-semibold">
                 Every member must clearly understand they are joining a co-ed, in-person group trip
                 with other members (strangers) at a shared rental home.
               </Text>
@@ -153,7 +153,7 @@ export default function OnboardingScreen() {
       case 'profile':
         return (
           <View className="flex-1 px-4">
-            <Text className="text-lg font-semibold text-[#0F172A]">Tell us about you</Text>
+            <Text className="text-lg font-extrabold text-retro-ink">Tell us about you</Text>
             <Text className="text-retro-dark text-sm mt-1">
               This helps us match you into the right group composition.
             </Text>
@@ -163,7 +163,7 @@ export default function OnboardingScreen() {
               <TextInput
                 value={name}
                 onChangeText={setName}
-                className="bg-retro-cream border-4 border-black px-4 py-3 text-base"
+                className="bg-white border-2 border-black rounded-xl shadow-retro-sm px-4 py-3 text-base"
                 placeholder="Alex Rivera"
               />
             </View>
@@ -175,7 +175,7 @@ export default function OnboardingScreen() {
                 value={age}
                 onChangeText={handleAgeChange}
                 keyboardType="number-pad"
-                className="bg-retro-cream border-4 border-black px-4 py-3 text-base w-24"
+                className="bg-white border-2 border-black rounded-xl shadow-retro-sm px-4 py-3 text-base w-24"
               />
               {ageError ? (
                 <Text className="text-xs text-red-500 mt-1">{ageError}</Text>
@@ -191,11 +191,11 @@ export default function OnboardingScreen() {
                   <Pressable
                     key={g}
                     onPress={() => setGender(g)}
-                    className={`flex-1 py-3 rounded-2xl border items-center ${
-                      gender === g ? 'bg-[#0284C8] border-[#0284C8]' : 'bg-retro-cream border-4 border-black'
+                    className={`flex-1 py-3 rounded-xl border-2 border-black items-center ${
+                      gender === g ? 'bg-retro-blue shadow-retro-sm' : 'bg-retro-paper'
                     }`}
                   >
-                    <Text className={`font-semibold ${gender === g ? 'text-white' : 'text-gray-700'}`}>
+                    <Text className={`font-bold ${gender === g ? 'text-white' : 'text-retro-ink'}`}>
                       {g === 'MALE' ? 'Man' : g === 'FEMALE' ? 'Woman' : 'Other'}
                     </Text>
                   </Pressable>
@@ -216,13 +216,13 @@ export default function OnboardingScreen() {
                   <Pressable
                     key={c}
                     onPress={() => setPreferredCity(c)}
-                    className={`flex-1 py-3 rounded-full items-center ${
-                      preferredCity === c ? 'bg-[#0284C8]' : 'bg-gray-100'
+                    className={`flex-1 py-3 rounded-full border-2 border-black items-center ${
+                      preferredCity === c ? 'bg-retro-blue shadow-retro-sm' : 'bg-retro-paper'
                     }`}
                   >
                     <Text
-                      className={`text-sm font-medium ${
-                        preferredCity === c ? 'text-white' : 'text-gray-700'
+                      className={`text-sm font-bold ${
+                        preferredCity === c ? 'text-white' : 'text-retro-ink'
                       }`}
                     >
                       {c}
@@ -237,7 +237,7 @@ export default function OnboardingScreen() {
       case 'agreements':
         return (
           <View className="flex-1 px-4">
-            <Text className="text-lg font-semibold text-[#0F172A]">Important agreements</Text>
+            <Text className="text-lg font-extrabold text-retro-ink">Important agreements</Text>
             <Text className="text-sm text-retro-dark mt-1">
               Please read and check every box. This is a real co-ed group trip experience.
             </Text>
@@ -247,16 +247,16 @@ export default function OnboardingScreen() {
                 <Pressable
                   key={item.key}
                   onPress={() => toggleAgreement(item.key)}
-                  className="flex-row items-start bg-retro-cream border-4 border-black rounded-2xl p-3 mb-2.5"
+                  className="flex-row items-start bg-retro-paper border-2 border-black shadow-retro-sm rounded-xl p-3 mb-2.5"
                 >
                   <View
-                    className={`w-5 h-5 mt-0.5 rounded border mr-3 items-center justify-center ${
-                      agreements[item.key] ? 'bg-[#0284C8] border-[#0284C8]' : 'border-gray-300'
+                    className={`w-5 h-5 mt-0.5 rounded border-2 border-black mr-3 items-center justify-center ${
+                      agreements[item.key] ? 'bg-retro-blue' : 'bg-white'
                     }`}
                   >
                     {agreements[item.key] && <Ionicons name="checkmark" size={14} color="white" />}
                   </View>
-                  <Text className="flex-1 text-[13px] text-gray-700 leading-snug">{item.label}</Text>
+                  <Text className="flex-1 text-[13px] text-retro-ink leading-snug">{item.label}</Text>
                 </Pressable>
               ))}
             </ScrollView>
@@ -270,20 +270,20 @@ export default function OnboardingScreen() {
       case 'verify':
         return (
           <View className="flex-1 px-4">
-            <Text className="text-lg font-semibold text-[#0F172A]">Safety &amp; verification</Text>
+            <Text className="text-lg font-extrabold text-retro-ink">Safety &amp; verification</Text>
             <Text className="text-sm text-retro-dark mt-1">These steps protect everyone in the group.</Text>
 
             {/* FIX #3b: show a warning if agreements weren't all checked before reaching this step */}
             {!allAgreementsChecked ? (
-              <View className="mt-3 bg-[#FEF3C7] border border-[#F59E0B] rounded-xl p-3">
-                <Text className="text-xs text-[#92400E] font-medium">
+              <View className="mt-3 bg-amber-100 border-2 border-black rounded-xl p-3">
+                <Text className="text-xs text-retro-ink font-bold">
                   ⚠ Please go back and accept all agreements before completing verification.
                 </Text>
               </View>
             ) : null}
 
             <View className="mt-6 space-y-3">
-              <View className="bg-retro-cream border-4 border-black rounded-2xl p-4">
+              <View className="bg-retro-paper border-2 border-black shadow-retro-sm rounded-2xl p-4">
                 <View className="flex-row items-center">
                   <Ionicons name="id-card-outline" size={22} color="#0284C8" />
                   <Text className="ml-2 font-semibold">Government ID + Selfie Verification</Text>
@@ -292,8 +292,8 @@ export default function OnboardingScreen() {
                 <Pressable
                   onPress={() => !idVerified && simulateVerify('id')}
                   disabled={idVerified || verifying === 'id'}
-                  className={`mt-3 ml-7 self-start px-4 py-2 rounded-full ${
-                    idVerified ? 'bg-emerald-100' : 'bg-[#0284C8]'
+                  className={`mt-3 ml-7 self-start px-4 py-2 rounded-full border-2 border-black ${
+                    idVerified ? 'bg-emerald-100' : 'bg-retro-blue'
                   }`}
                 >
                   {verifying === 'id' ? (
@@ -301,7 +301,7 @@ export default function OnboardingScreen() {
                   ) : (
                     <Text
                       className={
-                        idVerified ? 'text-emerald-700 text-xs font-medium' : 'text-white text-xs font-semibold'
+                        idVerified ? 'text-emerald-800 text-xs font-bold' : 'text-white text-xs font-bold'
                       }
                     >
                       {idVerified ? '✓ Verified' : 'Start ID Verification'}
@@ -310,7 +310,7 @@ export default function OnboardingScreen() {
                 </Pressable>
               </View>
 
-              <View className="bg-retro-cream border-4 border-black rounded-2xl p-4">
+              <View className="bg-retro-paper border-2 border-black shadow-retro-sm rounded-2xl p-4">
                 <View className="flex-row items-center">
                   <Ionicons name="shield-checkmark-outline" size={22} color="#0284C8" />
                   <Text className="ml-2 font-semibold">Background Check</Text>
@@ -321,8 +321,8 @@ export default function OnboardingScreen() {
                 <Pressable
                   onPress={() => !bgVerified && simulateVerify('bg')}
                   disabled={bgVerified || verifying === 'bg'}
-                  className={`mt-3 ml-7 self-start px-4 py-2 rounded-full ${
-                    bgVerified ? 'bg-emerald-100' : 'bg-[#0284C8]'
+                  className={`mt-3 ml-7 self-start px-4 py-2 rounded-full border-2 border-black ${
+                    bgVerified ? 'bg-emerald-100' : 'bg-retro-blue'
                   }`}
                 >
                   {verifying === 'bg' ? (
@@ -330,7 +330,7 @@ export default function OnboardingScreen() {
                   ) : (
                     <Text
                       className={
-                        bgVerified ? 'text-emerald-700 text-xs font-medium' : 'text-white text-xs font-semibold'
+                        bgVerified ? 'text-emerald-800 text-xs font-bold' : 'text-white text-xs font-bold'
                       }
                     >
                       {bgVerified ? '✓ Clear' : 'Run Background Check'}
@@ -352,10 +352,10 @@ export default function OnboardingScreen() {
             {!completed ? (
               <>
                 <Ionicons name="checkmark-circle" size={64} color="#0284C8" />
-                <Text className="mt-4 text-2xl font-semibold text-[#0F172A]">You're almost in.</Text>
+                <Text className="mt-4 text-2xl font-extrabold text-retro-ink">You're almost in.</Text>
                 <Text className="text-center text-gray-600 mt-2">Review your info and finish onboarding.</Text>
 
-                <View className="mt-6 w-full bg-gray-50 rounded-2xl p-4">
+                <View className="mt-6 w-full bg-retro-paper border-2 border-black shadow-retro-sm rounded-2xl p-4">
                   <Text className="text-sm">
                     <Text className="text-retro-dark">Name:</Text> {name}
                   </Text>
@@ -374,7 +374,7 @@ export default function OnboardingScreen() {
                 <Pressable
                   onPress={handleComplete}
                   disabled={completing || !allAgreementsChecked || !idVerified || !bgVerified}
-                  className="mt-6 bg-[#1E40AF] w-full py-3.5 rounded-2xl items-center"
+                  className="mt-6 bg-retro-ink w-full py-3.5 rounded-xl border-2 border-black shadow-retro items-center"
                 >
                   {completing ? (
                     <ActivityIndicator color="#fff" />
@@ -400,13 +400,13 @@ export default function OnboardingScreen() {
 
                 <Pressable
                   onPress={goToSubscribe}
-                  className="mt-8 bg-[#0284C8] w-full py-3.5 rounded-2xl items-center"
+                  className="mt-8 bg-retro-blue w-full py-3.5 rounded-xl border-2 border-black shadow-retro items-center"
                 >
-                  <Text className="text-white font-semibold">Continue to Membership</Text>
+                  <Text className="text-white font-bold">Continue to Membership</Text>
                 </Pressable>
 
                 <Pressable onPress={goBackToApp} className="mt-3">
-                  <Text className="text-[#0284C8] text-sm">Back to app (you can subscribe later)</Text>
+                  <Text className="text-retro-blue text-sm font-semibold">Back to app (you can subscribe later)</Text>
                 </Pressable>
               </>
             )}
@@ -424,20 +424,20 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <View className="flex-1 bg-retro-cream border-4 border-black">
-      <View className="pt-12 pb-3 px-4 bg-retro-cream border-b border-gray-100">
+    <View className="flex-1 bg-retro-cream">
+      <View className="pt-12 pb-3 px-4 bg-retro-cream border-b-2 border-black">
         <View className="flex-row items-center justify-between">
           <Pressable onPress={() => router.back()} className="p-1 -ml-1">
             <Ionicons name="chevron-back" size={22} color="#64748B" />
           </Pressable>
-          <Text className="font-semibold text-[#1E40AF]">Lumina Onboarding</Text>
+          <Text className="font-extrabold text-retro-ink">Lumina Onboarding</Text>
           <View style={{ width: 22 }} />
         </View>
 
-        <View className="mt-3 h-1 bg-gray-100 rounded">
-          <View className="h-1 bg-[#0284C8] rounded" style={{ width: `${progress}%` }} />
+        <View className="mt-3 h-2 bg-white border border-black rounded-full overflow-hidden">
+          <View className="h-full bg-retro-blue" style={{ width: `${progress}%` }} />
         </View>
-        <Text className="text-[10px] text-gray-400 mt-1 text-right">
+        <Text className="text-[10px] font-bold text-retro-dark mt-1 text-right">
           {stepIndex + 1} / {STEPS.length}
         </Text>
       </View>
@@ -447,23 +447,23 @@ export default function OnboardingScreen() {
       </ScrollView>
 
       {currentStep !== 'complete' && (
-        <View className="px-4 pb-6 pt-2 border-t border-gray-100 bg-retro-cream flex-row">
+        <View className="px-4 pb-6 pt-2 border-t-2 border-black bg-retro-cream flex-row">
           {stepIndex > 0 && (
             <Pressable
               onPress={back}
-              className="flex-1 mr-2 py-3 rounded-2xl border border-gray-200 items-center"
+              className="flex-1 mr-2 py-3 rounded-xl bg-retro-paper border-2 border-black items-center"
             >
-              <Text className="font-medium text-gray-600">Back</Text>
+              <Text className="font-bold text-retro-ink">Back</Text>
             </Pressable>
           )}
           <Pressable
             onPress={next}
             disabled={!canGoNext()}
-            className={`flex-1 py-3 rounded-2xl items-center ${
-              canGoNext() ? 'bg-[#1E40AF]' : 'bg-gray-200'
+            className={`flex-1 py-3 rounded-xl border-2 items-center ${
+              canGoNext() ? 'bg-retro-blue border-black shadow-retro-sm' : 'bg-gray-200 border-gray-300'
             }`}
           >
-            <Text className={`font-semibold ${canGoNext() ? 'text-white' : 'text-gray-400'}`}>
+            <Text className={`font-bold ${canGoNext() ? 'text-white' : 'text-gray-400'}`}>
               {currentStep === 'verify' ? 'Finish & Review' : 'Continue'}
             </Text>
           </Pressable>

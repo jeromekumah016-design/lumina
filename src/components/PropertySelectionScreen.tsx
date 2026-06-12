@@ -327,21 +327,21 @@ export default function PropertySelectionScreen() {
   }, [rankedProperties]);
 
   return (
-    <View className="flex-1 bg-retro-cream border-4 border-black shadow-retro">
+    <View className="flex-1 bg-retro-cream">
       {/* Header */}
-      <View className="pt-12 px-4 pb-2 bg-retro-cream border-4 border-black shadow-retro border-b border-gray-100">
+      <View className="pt-12 px-4 pb-3 bg-retro-cream border-b-2 border-black">
         <View className="flex-row items-center">
-          <Text className="text-3xl font-semibold text-[#1E40AF]">Lumina</Text>
-          <Text className="text-[#F4C95F] text-2xl ml-1 -mt-1">✦</Text>
+          <Text className="text-3xl font-extrabold tracking-tight text-retro-ink">Lumina</Text>
+          <Text className="text-retro-amber text-2xl ml-1 -mt-1">✦</Text>
         </View>
         <Text className="text-retro-dark -mt-1">Curated small-group travel for platonic friendships.</Text>
 
         {/* Status banner */}
-        <View className="mt-3 bg-[#DBEAFE] border-4 border-black shadow-retro rounded-2xl p-3 flex-row items-center">
+        <View className="mt-3 bg-retro-paper border-2 border-black shadow-retro-sm rounded-xl p-3 flex-row items-center">
           <Ionicons name="game-controller" size={18} color="#0284C8" />
-          <Text className="ml-2 text-sm font-semibold text-[#0C4A6E] flex-1">Game • Collaborative voting • 2 votes per person</Text>
+          <Text className="ml-2 text-sm font-bold text-retro-ink flex-1">Game • Collaborative voting • 2 votes per person</Text>
           <Pressable onPress={() => router.push('/matching' as any)}>
-            <Text className="text-[#0284C8] text-xs font-medium">Queue</Text>
+            <Text className="text-retro-blue text-xs font-bold">Queue</Text>
           </Pressable>
         </View>
       </View>
@@ -349,11 +349,11 @@ export default function PropertySelectionScreen() {
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }}>
         {/* Feature 3: Conduct gate banner */}
         {!conductAccepted && (
-          <View className="mx-4 mt-3 bg-amber-50 border border-amber-300 rounded-xl p-3">
-            <Text className="text-sm font-bold text-amber-800">Code of Conduct Required</Text>
-            <Text className="text-xs text-amber-700 mt-0.5">Review and accept our Code of Conduct to participate in group voting.</Text>
-            <Pressable onPress={handleAcceptConduct} className="mt-2 bg-amber-500 py-1.5 rounded-lg items-center">
-              <Text className="text-white text-sm font-semibold">Accept &amp; Continue ✓</Text>
+          <View className="mx-4 mt-3 bg-amber-100 border-2 border-black shadow-retro-sm rounded-xl p-3">
+            <Text className="text-sm font-extrabold text-retro-ink">Code of Conduct Required</Text>
+            <Text className="text-xs text-retro-dark mt-0.5">Review and accept our Code of Conduct to participate in group voting.</Text>
+            <Pressable onPress={handleAcceptConduct} className="mt-2 bg-retro-ink border-2 border-black py-2 rounded-lg items-center">
+              <Text className="text-white text-sm font-bold">Accept &amp; Continue ✓</Text>
             </Pressable>
           </View>
         )}
@@ -374,9 +374,9 @@ export default function PropertySelectionScreen() {
                   setEliminatedIds(new Set());
                   setResultsSummary(null);
                 }}
-                className={`flex-1 py-2 rounded-2xl border items-center ${currentCity === city ? 'bg-[#0284C8] border-[#0284C8]' : 'bg-retro-cream border-4 border-black shadow-retro border-gray-200'}`}
+                className={`flex-1 py-2 rounded-full border-2 border-black items-center ${currentCity === city ? 'bg-retro-blue shadow-retro-sm' : 'bg-retro-paper'}`}
               >
-                <Text className={`font-semibold text-sm ${currentCity === city ? 'text-white' : 'text-gray-700'}`}>{city}</Text>
+                <Text className={`font-bold text-sm ${currentCity === city ? 'text-white' : 'text-retro-ink'}`}>{city}</Text>
               </Pressable>
             ))}
           </View>
@@ -386,11 +386,11 @@ export default function PropertySelectionScreen() {
         <View className="px-4 mt-2 flex-row items-center justify-between">
           <Text className="text-xs text-retro-dark">Budget cap: ${groupBudget}/person/night</Text>
           <View className="flex-row gap-2">
-            <Pressable onPress={() => setGroupBudget(b => Math.max(50, b - 10))} className="bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
-              <Text className="text-sm font-bold text-gray-600">−</Text>
+            <Pressable onPress={() => setGroupBudget(b => Math.max(50, b - 10))} className="bg-retro-paper px-2.5 py-0.5 rounded-md border-2 border-black">
+              <Text className="text-sm font-bold text-retro-ink">−</Text>
             </Pressable>
-            <Pressable onPress={() => setGroupBudget(b => b + 10)} className="bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
-              <Text className="text-sm font-bold text-gray-600">+</Text>
+            <Pressable onPress={() => setGroupBudget(b => b + 10)} className="bg-retro-paper px-2.5 py-0.5 rounded-md border-2 border-black">
+              <Text className="text-sm font-bold text-retro-ink">+</Text>
             </Pressable>
           </View>
         </View>
@@ -399,21 +399,21 @@ export default function PropertySelectionScreen() {
         <View className="px-4 mt-4">
           <View className="flex-row items-center justify-between">
             <View>
-              <Text className="text-xl font-semibold text-[#0F172A]">{currentCity} homes</Text>
+              <Text className="text-xl font-extrabold text-retro-ink">{currentCity} homes</Text>
               <Text className="text-retro-dark text-xs">Round {round?.currentDay || 2} of {round?.totalDays || 3}</Text>
             </View>
             <View className="items-end">
               <Text className="text-xs text-retro-dark">Voting ends in</Text>
-              <Text className="font-mono text-base font-semibold text-[#0284C8]">{displayCountdown}</Text>
+              <Text className="font-mono text-base font-semibold text-retro-blue">{displayCountdown}</Text>
             </View>
           </View>
 
           {/* Avatars +N */}
           <View className="flex-row items-center mt-2">
             {displayedAvatars.map((m, i) => (
-              <Image key={i} source={{ uri: m.avatarUrl }} className="w-8 h-8 rounded-full border-2 border-white -ml-2" style={{ zIndex: 10 - i }} />
+              <Image key={i} source={{ uri: m.avatarUrl }} className="w-8 h-8 rounded-full border-2 border-black -ml-2" style={{ zIndex: 10 - i }} />
             ))}
-            <View className="ml-1 bg-[#0284C8] px-2 py-0.5 rounded-full border-2 border-white">
+            <View className="ml-1 bg-retro-blue px-2 py-0.5 rounded-full border-2 border-black">
               <Text className="text-white text-[10px] font-semibold">+{extraCount}</Text>
             </View>
             <Text className="ml-2 text-xs text-retro-dark">4 men + 7 women choosing together</Text>
@@ -422,7 +422,7 @@ export default function PropertySelectionScreen() {
           {/* Feature 1: Live voting progress bar */}
           {groupVotingStatus && (
             <View className="mt-1.5 flex-row items-center gap-2">
-              <View className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <View className="flex-1 h-2 bg-white border border-black rounded-full overflow-hidden">
                 <View
                   className="h-full bg-emerald-500 rounded-full"
                   style={{ width: `${(groupVotingStatus.votedCount / groupVotingStatus.totalMembers) * 100}%` }}
@@ -449,7 +449,7 @@ export default function PropertySelectionScreen() {
               <Pressable
                 key={p.id}
                 onPress={() => openComments(p)}
-                className={`mb-4 bg-retro-cream border-4 border-black shadow-retro rounded-3xl overflow-hidden ${isElim ? 'opacity-50' : ''}`}
+                className={`mb-4 bg-retro-paper border-2 border-black shadow-retro rounded-2xl overflow-hidden ${isElim ? 'opacity-50' : ''}`}
               >
                 <View className="relative">
                   <Image source={{ uri: p.imageUrl }} className="w-full h-44" />
@@ -486,7 +486,7 @@ export default function PropertySelectionScreen() {
                     <View className="flex-row gap-2">
                       <Pressable
                         onPress={() => handleVote(p.id, 'keep')}
-                        className={`flex-row items-center px-3 py-1 rounded-full border ${p.myVote === 'keep' ? 'bg-emerald-100 border-emerald-600' : 'border-gray-300'}`}
+                        className={`flex-row items-center px-3 py-1 rounded-full border-2 border-black ${p.myVote === 'keep' ? 'bg-emerald-200' : 'bg-white'}`}
                       >
                         <Ionicons name="thumbs-up" size={14} color={p.myVote === 'keep' ? '#059669' : '#64748B'} />
                         <Text className={`ml-1 text-xs font-medium ${p.myVote === 'keep' ? 'text-emerald-700' : 'text-gray-600'}`}>Keep • {p.keepVotes}</Text>
@@ -494,7 +494,7 @@ export default function PropertySelectionScreen() {
 
                       <Pressable
                         onPress={() => handleVote(p.id, 'eliminate')}
-                        className={`flex-row items-center px-3 py-1 rounded-full border ${p.myVote === 'eliminate' ? 'bg-rose-100 border-rose-600' : 'border-gray-300'}`}
+                        className={`flex-row items-center px-3 py-1 rounded-full border-2 border-black ${p.myVote === 'eliminate' ? 'bg-rose-200' : 'bg-white'}`}
                       >
                         <Ionicons name="thumbs-down" size={14} color={p.myVote === 'eliminate' ? '#e11d48' : '#64748B'} />
                         <Text className={`ml-1 text-xs font-medium ${p.myVote === 'eliminate' ? 'text-rose-700' : 'text-gray-600'}`}>Elim • {p.eliminateVotes}</Text>
@@ -508,12 +508,12 @@ export default function PropertySelectionScreen() {
                       </Pressable>
                       {/* Feature 3: report button */}
                       <Pressable onPress={() => handleReport(p)}>
-                        <Ionicons name="flag-outline" size={14} color="#CBD5E1" />
+                        <Ionicons name="flag-outline" size={14} color="#8A7A6E" />
                       </Pressable>
                     </View>
                   </View>
 
-                  {p.myVote && <View className="mt-1 h-0.5 bg-[#0284C8] w-8" />}
+                  {p.myVote && <View className="mt-1 h-0.5 bg-retro-blue w-8" />}
                 </View>
               </Pressable>
             );
@@ -525,21 +525,21 @@ export default function PropertySelectionScreen() {
         <View className="px-4 pb-8">
           {viewMode === 'vote' ? (
             <View className="flex-row gap-3">
-              <Pressable onPress={computeResults} className="flex-1 bg-[#0F172A] py-3 rounded-2xl items-center">
-                <Text className="text-white font-semibold">View Results</Text>
+              <Pressable onPress={computeResults} className="flex-1 bg-retro-ink py-3 rounded-xl border-2 border-black shadow-retro-sm items-center">
+                <Text className="text-white font-bold">View Results</Text>
               </Pressable>
-              <Pressable onPress={handleAdvanceRound} className="px-4 py-3 rounded-2xl border border-gray-300 items-center">
-                <Text className="text-xs text-retro-dark">Advance Day</Text>
+              <Pressable onPress={handleAdvanceRound} className="px-4 py-3 rounded-xl bg-retro-paper border-2 border-black items-center justify-center">
+                <Text className="text-xs font-bold text-retro-ink">Advance Day</Text>
               </Pressable>
             </View>
           ) : (
             <View>
-              <Pressable onPress={() => { setViewMode('vote'); setEliminatedIds(new Set()); setResultsSummary(null); }} className="bg-[#0284C8] py-3 rounded-2xl items-center">
-                <Text className="text-white font-semibold">Back to Voting</Text>
+              <Pressable onPress={() => { setViewMode('vote'); setEliminatedIds(new Set()); setResultsSummary(null); }} className="bg-retro-blue py-3 rounded-xl border-2 border-black shadow-retro-sm items-center">
+                <Text className="text-white font-bold">Back to Voting</Text>
               </Pressable>
               {/* Feature 4: Trip Room — opens once group converges on a winner */}
-              <Pressable onPress={openTripRoom} className="mt-2 bg-amber-500 py-3 rounded-2xl items-center">
-                <Text className="text-white font-semibold">Open Trip Room 🏠</Text>
+              <Pressable onPress={openTripRoom} className="mt-2 bg-retro-amber py-3 rounded-xl border-2 border-black shadow-retro-sm items-center">
+                <Text className="text-retro-ink font-bold">Open Trip Room 🏠</Text>
               </Pressable>
             </View>
           )}
@@ -552,9 +552,13 @@ export default function PropertySelectionScreen() {
         <Animated.View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end', opacity: modalOpacity }}>
           <Animated.View
             style={{
-              backgroundColor: '#F5F1E9',
+              backgroundColor: '#FFFDF6',
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
+              borderTopWidth: 2,
+              borderLeftWidth: 2,
+              borderRightWidth: 2,
+              borderColor: '#000',
               padding: 16,
               maxHeight: '70%',
               transform: [{ translateY: modalTranslate }],
@@ -567,7 +571,7 @@ export default function PropertySelectionScreen() {
             <ScrollView className="max-h-72">
               {comments.length === 0 && <Text className="text-gray-500">No comments yet. Be first!</Text>}
               {comments.map((c) => (
-                <View key={c.id} className="mb-2 p-2 bg-white rounded border border-gray-100">
+                <View key={c.id} className="mb-2 p-2 bg-white rounded-lg border border-black">
                   <Text className="text-xs font-semibold">{c.author} <Text className="text-gray-400">· {c.timestamp}</Text></Text>
                   <Text className="text-sm mt-0.5">{c.text}</Text>
                 </View>
@@ -579,11 +583,11 @@ export default function PropertySelectionScreen() {
                   value={newCommentText}
                   onChangeText={setNewCommentText}
                   placeholder="Add a comment..."
-                  className="flex-1 bg-white border border-gray-300 rounded px-3 py-2 mr-2"
+                  className="flex-1 bg-white border-2 border-black rounded-lg px-3 py-2 mr-2"
                   onSubmitEditing={submitComment}
                 />
-                <Pressable onPress={submitComment} className="bg-[#0284C8] px-4 rounded items-center justify-center">
-                  <Text className="text-white font-semibold">Send</Text>
+                <Pressable onPress={submitComment} className="bg-retro-blue px-4 rounded-lg border-2 border-black items-center justify-center">
+                  <Text className="text-white font-bold">Send</Text>
                 </Pressable>
               </View>
             </KeyboardAvoidingView>
