@@ -12,11 +12,11 @@
       "android"
     ],
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/images/icon.png"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0F172A",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -33,6 +33,7 @@
           "backgroundColor": "#208AEF",
           "android": {
             "image": "./assets/images/splash-icon.png",
+            "resizeMode": "contain",
             "imageWidth": 76
           }
         }

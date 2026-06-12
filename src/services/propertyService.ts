@@ -1,6 +1,20 @@
 import { Property, Round, Member, Comment } from '../types/property';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// ─── Feature 1: live group-voting status ───────────────────────────────────
+export type GroupVotingStatus = {
+  votedCount: number;
+  totalMembers: number;
+  memberStatuses: { id: string; name: string; hasVoted: boolean }[];
+};
+
+// ─── Feature 2: smart recommendations + budget ─────────────────────────────
+export type RankedProperty = Property & {
+  score: number;
+  isOverBudget: boolean;
+  recommendation: 'top-pick' | 'budget-warning' | null;
+};
+
 /**
  * Mock data layer for the Property Selection "game" (collaborative keep/eliminate voting).
  * 
@@ -264,18 +278,29 @@ const mockPropertiesByCity: Record<string, Property[]> = {
 
 let currentCity = 'Chicago';
 
+// Feature 1: simulated group-voting presence (resets on module load)
+let _simulatedVotedCount = 4; // demo starts 4/11 voted
+
+// Feature 2: group budget cap ($/person/night)
+let _groupBudget = 130;
+
 const getStorageKey = (city: string, propId: string, field: string) => `lumina:${city}:${propId}:${field}`;
 
 async function loadPersisted(prop: Property, city: string): Promise<Property> {
   const myVoteStr = await AsyncStorage.getItem(getStorageKey(city, prop.id, 'myVote'));
   const favStr = await AsyncStorage.getItem(getStorageKey(city, prop.id, 'isFavorited'));
-  if (myVoteStr) prop.myVote = myVoteStr as 'keep' | 'eliminate' | null;
+  if (myVoteStr === 'keep' || myVoteStr === 'eliminate') prop.myVote = myVoteStr;
+  else if (myVoteStr === 'none') prop.myVote = null; // explicitly cleared in a prior session
   if (favStr) prop.isFavorited = favStr === 'true';
   return prop;
 }
 
 async function persistVote(city: string, propId: string, vote: 'keep' | 'eliminate' | null) {
-  await AsyncStorage.setItem(getStorageKey(city, propId, 'myVote'), vote || '');
+  const key = getStorageKey(city, propId, 'myVote');
+  // Store 'none' (not remove) so that explicitly cleared seed votes remain
+  // cleared after an app restart — removeItem would leave no key, causing
+  // loadPersisted to fall back to the seed value and resurrect the vote.
+  await AsyncStorage.setItem(key, vote === null ? 'none' : vote);
 }
 
 async function persistFavorite(city: string, propId: string, fav: boolean) {
@@ -380,15 +405,14 @@ export const propertyService = {
   },
 
   async setCurrentCity(city: string): Promise<void> {
-    if (mockPropertiesByCity[city]) {
-      currentCity = city;
-    } else {
-      currentCity = 'Chicago';
+    if (!mockPropertiesByCity[city]) {
+      throw new Error('Unknown city: ' + city);
     }
+    currentCity = city;
   },
 
   async getCurrentRound(): Promise<Round> {
-    return currentRound;
+    return { ...currentRound };
   },
 
   async getMembers(): Promise<Member[]> {
@@ -403,8 +427,8 @@ export const propertyService = {
 
   /** Returns number of active votes the current demo user has cast (for "2 votes" limit UI). */
   async getUserVoteCount(): Promise<number> {
-    const list = mockPropertiesByCity[currentCity] || [];
-    return list.filter((p) => p.myVote != null).length;
+    const props = await this.getProperties();
+    return props.filter((p) => p.myVote != null).length;
   },
 
   async castVote(propertyId: string, vote: 'keep' | 'eliminate' | null): Promise<Property> {
@@ -452,6 +476,9 @@ export const propertyService = {
   },
 
   async addComment(propertyId: string, text: string): Promise<Comment> {
+    if (!text.trim()) throw new Error('Comment text cannot be empty');
+    const list = mockPropertiesByCity[currentCity] || [];
+    if (!list.find((p) => p.id === propertyId)) throw new Error('Property not found');
     const existing = await loadComments(currentCity, propertyId);
     const newComment: Comment = {
       id: 'c' + Date.now().toString(36),
@@ -463,13 +490,51 @@ export const propertyService = {
     await saveComments(currentCity, propertyId, updated);
 
     // Keep the Property's commentCount in sync (used by cards)
-    const list = mockPropertiesByCity[currentCity] || [];
     const p = list.find((pp) => pp.id === propertyId);
     if (p) {
       p.commentCount = (p.commentCount || 0) + 1;
     }
 
     return newComment;
+  },
+
+  // ── Feature 1: Group voting presence ──────────────────────────────────────
+  async getGroupVotingStatus(): Promise<GroupVotingStatus> {
+    const statuses = mockMembers.map((m, i) => ({
+      id: m.id,
+      name: m.name,
+      hasVoted: i < _simulatedVotedCount,
+    }));
+    return { votedCount: _simulatedVotedCount, totalMembers: mockMembers.length, memberStatuses: statuses };
+  },
+
+  async simulateVoteProgress(): Promise<GroupVotingStatus> {
+    if (_simulatedVotedCount < mockMembers.length) _simulatedVotedCount++;
+    return this.getGroupVotingStatus();
+  },
+
+  // ── Feature 2: Smart recommendations + budget ─────────────────────────────
+  getGroupBudget(): number {
+    return _groupBudget;
+  },
+
+  setGroupBudget(budget: number): void {
+    _groupBudget = Math.max(0, budget);
+  },
+
+  rankProperties(props: Property[], budget?: number): RankedProperty[] {
+    const cap = budget !== undefined ? budget : _groupBudget;
+    const scored = props.map(p => ({
+      ...p,
+      score: p.keepVotes - p.eliminateVotes + (p.isFavorited ? 5 : 0),
+      isOverBudget: p.pricePerPerson > cap,
+      recommendation: null as RankedProperty['recommendation'],
+    }));
+    scored.sort((a, b) => b.score - a.score);
+    // Mark top pick (highest score, regardless of budget) then budget warnings
+    if (scored.length > 0) scored[0].recommendation = 'top-pick';
+    scored.forEach(r => { if (r.isOverBudget && r.recommendation !== 'top-pick') r.recommendation = 'budget-warning'; });
+    return scored;
   },
 
   // --- Round / elimination helpers for results view ---
