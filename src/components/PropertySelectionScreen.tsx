@@ -582,11 +582,10 @@ export default function PropertySelectionScreen() {
                 <Pressable onPress={submitComment} className="bg-[#0284C8] px-4 rounded items-center justify-center">
                   <Text className="text-white font-semibold">Send</Text>
                 </Pressable>
-              </Pressable>
-            </View>
-          </KeyboardAvoidingView>
+              </View>
+            </KeyboardAvoidingView>
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
     </Modal>
   );
 }

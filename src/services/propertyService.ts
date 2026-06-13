@@ -436,20 +436,30 @@ export const propertyService = {
     const prop = list.find((p) => p.id === propertyId);
     if (!prop) throw new Error('Property not found');
 
+    // Use the fully-persisted list (AsyncStorage merged with seed) so the vote-
+    // limit check and the revert step are accurate even after an app restart.
+    // The in-memory `list` reflects the seed defaults and within-session mutations
+    // but does NOT include votes that were persisted to AsyncStorage in a prior
+    // session — which can cause the limit to be enforced against the wrong tally
+    // or the wrong vote to be reverted when switching an existing vote.
+    const persistedList = await this.getProperties();
+    const persistedProp = persistedList.find(p => p.id === propertyId);
+    const currentVote = persistedProp?.myVote ?? prop.myVote;
+
     // Enforce per-member 2-vote limit (matches "Everyone has 2 votes" notice).
     // Allow changing/clearing existing votes; block only *new* votes when at cap.
     if (vote !== null) {
-      const activeCount = list.filter((p) => p.myVote != null).length;
-      const alreadyVotedHere = prop.myVote != null;
+      const activeCount = persistedList.filter(p => p.myVote != null).length;
+      const alreadyVotedHere = currentVote != null;
       if (!alreadyVotedHere && activeCount >= 2) {
         // Limit reached — return unchanged so UI can show message/disable
         return { ...prop };
       }
     }
 
-    // Revert previous vote counts
-    if (prop.myVote === 'keep') prop.keepVotes--;
-    if (prop.myVote === 'eliminate') prop.eliminateVotes--;
+    // Revert previous vote counts using the authoritative persisted vote
+    if (currentVote === 'keep') prop.keepVotes--;
+    if (currentVote === 'eliminate') prop.eliminateVotes--;
 
     prop.myVote = vote;
 
