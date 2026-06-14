@@ -434,14 +434,23 @@ export default function PropertySelectionScreen() {
 
           <View className="mt-1 flex-row items-center">
             <Text className="text-[11px] text-retro-dark">Everyone has 2 votes • {userVoteCount}/2 used</Text>
-            <Pressable onPress={() => { /* could show help */ }} className="ml-2">
+            <Pressable
+              onPress={() =>
+                Alert.alert(
+                  'How voting works',
+                  'Each member gets exactly 2 votes per round.\n\n• Tap Keep (👍) or Eliminate (👎) on up to 2 properties.\n• Tap the same button again to change your vote.\n• Tap any property card to open discussion.\n• "View Results" shows the group standings.\n• After results, "Open Trip Room" locks in the winner.',
+                  [{ text: 'Got it' }]
+                )
+              }
+              className="ml-2"
+            >
               <Ionicons name="information-circle-outline" size={14} color="#64748B" />
             </Pressable>
           </View>
         </View>
 
         {/* Properties grid */}
-        <View className="px-4 pt-4" style={gridAnimStyle}>
+        <Animated.View className="px-4 pt-4" style={gridAnimStyle}>
           {properties.map((p) => {
             const isElim = eliminatedIds.has(p.id);
             return (
@@ -458,9 +467,10 @@ export default function PropertySelectionScreen() {
                   <Pressable
                     onPress={() => handleToggleFavorite(p.id)}
                     className="absolute top-3 right-3 bg-white/90 border border-black p-1.5 rounded-full"
-                    style={heartAnimStyle}
                   >
-                    <Ionicons name={p.isFavorited ? 'heart' : 'heart-outline'} size={16} color={p.isFavorited ? '#e11d48' : '#64748B'} />
+                    <Animated.View style={heartAnimStyle}>
+                      <Ionicons name={p.isFavorited ? 'heart' : 'heart-outline'} size={16} color={p.isFavorited ? '#e11d48' : '#64748B'} />
+                    </Animated.View>
                   </Pressable>
                   {viewMode === 'results' && isElim && (
                     <View className="absolute inset-0 bg-black/60 items-center justify-center">
@@ -516,7 +526,7 @@ export default function PropertySelectionScreen() {
               </Pressable>
             );
           })}
-        </View>
+        </Animated.View>
 
         {/* Bottom actions */}
         <View className="px-4 pb-8">

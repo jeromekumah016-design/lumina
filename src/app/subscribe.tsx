@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useLuminaState } from '../context/LuminaContext';
+import { userService } from '../services/userService';
 
 /**
  * Membership / Subscription screen for Lumina.
@@ -46,7 +47,7 @@ export default function SubscribeScreen() {
   };
 
   const handleCancel = async () => {
-    // For demo we can expose cancel later; for now just refresh after a direct call isn't in hook yet
+    await userService.cancelMembership();
     await refresh();
   };
 

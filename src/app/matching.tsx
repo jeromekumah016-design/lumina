@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -46,6 +46,13 @@ export default function MatchingScreen() {
       setLoading(false);
     }
   };
+
+  // If already matched from a prior session, populate matchResult from context
+  useEffect(() => {
+    if (isMatched && !matchResult && matching?.matchedGroup) {
+      setMatchResult({ groupPreview: matching.matchedGroup });
+    }
+  }, [isMatched, matching]);
 
   const handleReset = async () => {
     setLoading(true);

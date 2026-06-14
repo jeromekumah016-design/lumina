@@ -48,7 +48,11 @@ export default function Feed() {
 
       <Text className="text-lg font-semibold mt-6 mb-3 text-[#0F172A]">Upcoming City Experiences</Text>
       {cities.map((c, i) => (
-        <View key={i} className="bg-gray-50 rounded-2xl p-4 mb-3 flex-row items-center border border-gray-100">
+        <Pressable
+          key={i}
+          onPress={() => router.push('/game' as any)}
+          className="bg-gray-50 rounded-2xl p-4 mb-3 flex-row items-center border border-gray-100"
+        >
           <View className="flex-1">
             <Text className="font-semibold text-lg text-[#0F172A]">{c.name}</Text>
             <Text className="text-gray-600 text-sm mt-0.5">{c.desc}</Text>
@@ -60,7 +64,7 @@ export default function Feed() {
           <View className="bg-[#0284C8]/10 rounded-full p-2">
             <Ionicons name="chevron-forward" size={18} color="#0284C8" />
           </View>
-        </View>
+        </Pressable>
       ))}
 
       <View className="mt-2 bg-[#DBEAFE] rounded-none border-4 border-black p-3">
