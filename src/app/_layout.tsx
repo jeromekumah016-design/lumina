@@ -82,7 +82,8 @@ export default function TabLayout() {
             ),
           }}
         />
-        {/* Flow screens — reachable via navigation only, never as tabs */}
+        {/* Non-tab screens — kept in same layout group so router.push() works,
+            but hidden from the tab bar via href:null */}
         <Tabs.Screen name="onboarding" options={{ href: null }} />
         <Tabs.Screen name="subscribe" options={{ href: null }} />
         <Tabs.Screen name="matching" options={{ href: null }} />

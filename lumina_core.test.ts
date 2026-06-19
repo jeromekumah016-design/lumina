@@ -695,6 +695,61 @@ describe('Restart Persistence, City Guard, Comment Property Validation, Round Co
     const after = await svc.advanceRound();
     expect(after.currentDay).toBe(Math.min(before.totalDays, before.currentDay + 1));
   });
+
+  // ── 5e. castVote correctly handles AS-persisted votes after simulated restart ──
+  // Scenario: session A cleared chi-2 (seed) and voted chi-1. After restart the
+  // in-memory list resets to seeds (chi-2='keep', chi-5='eliminate', chi-1=null),
+  // but AsyncStorage still has the real state. castVote must consult persisted
+  // state for the limit check and for the vote-revert step.
+  it('castVote(change) on a property voted only in AS (not in-memory seed) is NOT blocked', async () => {
+    const AsyncStorageMock = require('@react-native-async-storage/async-storage').default;
+    // Inject prior-session state: chi-2 cleared, chi-1 keep-voted
+    await AsyncStorageMock.setItem('lumina:Chicago:chi-2:myVote', 'none');
+    await AsyncStorageMock.setItem('lumina:Chicago:chi-1:myVote', 'keep');
+
+    // Switching chi-1 keep→eliminate must succeed — it is an existing vote, not new
+    const result = await svc.castVote('chi-1', 'eliminate');
+    expect(result.myVote).toBe('eliminate');
+  });
+
+  it('castVote(change) correctly decrements keepVotes for a prior-session keep vote', async () => {
+    const AsyncStorageMock = require('@react-native-async-storage/async-storage').default;
+    await AsyncStorageMock.setItem('lumina:Chicago:chi-2:myVote', 'none');
+    await AsyncStorageMock.setItem('lumina:Chicago:chi-1:myVote', 'keep');
+
+    const before = (await svc.getProperties()).find(p => p.id === 'chi-1')!;
+    await svc.castVote('chi-1', 'eliminate');
+    const after = (await svc.getProperties()).find(p => p.id === 'chi-1')!;
+
+    expect(after.keepVotes).toBe(before.keepVotes - 1);
+    expect(after.eliminateVotes).toBe(before.eliminateVotes + 1);
+    expect(after.myVote).toBe('eliminate');
+  });
+
+  it('getUserVoteCount stays at 2 after changing an AS-persisted vote (no slot consumed)', async () => {
+    const AsyncStorageMock = require('@react-native-async-storage/async-storage').default;
+    await AsyncStorageMock.setItem('lumina:Chicago:chi-2:myVote', 'none');
+    await AsyncStorageMock.setItem('lumina:Chicago:chi-1:myVote', 'keep');
+
+    // Active votes: chi-1='keep' (AS) + chi-5='eliminate' (seed) = 2
+    expect(await svc.getUserVoteCount()).toBe(2);
+
+    await svc.castVote('chi-1', 'eliminate'); // change, not new
+
+    // Still 2: chi-1='eliminate', chi-5='eliminate'
+    expect(await svc.getUserVoteCount()).toBe(2);
+  });
+
+  it('a new vote IS blocked when AS-persisted votes already fill the 2-slot budget', async () => {
+    const AsyncStorageMock = require('@react-native-async-storage/async-storage').default;
+    // chi-2 cleared, chi-1 voted → real active count is 2 (chi-1 + chi-5)
+    await AsyncStorageMock.setItem('lumina:Chicago:chi-2:myVote', 'none');
+    await AsyncStorageMock.setItem('lumina:Chicago:chi-1:myVote', 'keep');
+
+    // chi-3 has no vote in memory or AS — this would be a third new vote
+    const result = await svc.castVote('chi-3', 'keep');
+    expect(result.myVote).toBeNull(); // blocked
+  });
 });
 
 // ───────────────────────────────────────────────────────────────────────────

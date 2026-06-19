@@ -63,14 +63,18 @@ export default function Profile() {
         </View>
       </View>
       {group.map((g, i) => (
-        <View key={i} className="flex-row items-center mb-2.5 bg-retro-paper border-2 border-black shadow-retro-sm rounded-xl p-2">
+        <Pressable
+          key={i}
+          onPress={() => router.push('/matching' as any)}
+          className="flex-row items-center mb-2.5 bg-retro-paper border-2 border-black shadow-retro-sm rounded-xl p-2"
+        >
           <Image source={{ uri: g.avatar }} className="w-8 h-8 rounded-full mr-3 border border-black" />
           <View className="flex-1">
             <Text className="font-bold text-retro-ink">{g.name}</Text>
             <Text className="text-[11px] text-retro-dark">{g.role}</Text>
           </View>
           <Ionicons name="chevron-forward" size={16} color="#6F6256" />
-        </View>
+        </Pressable>
       ))}
       <Text className="text-[11px] text-retro-dark mt-3 text-center">Full group + chat in Game. Badges &amp; settings coming soon.</Text>
 

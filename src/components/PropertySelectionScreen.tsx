@@ -434,7 +434,16 @@ export default function PropertySelectionScreen() {
 
           <View className="mt-1 flex-row items-center">
             <Text className="text-[11px] text-retro-dark">Everyone has 2 votes • {userVoteCount}/2 used</Text>
-            <Pressable onPress={() => { /* could show help */ }} className="ml-2">
+            <Pressable
+              onPress={() =>
+                Alert.alert(
+                  'How voting works',
+                  'Each member gets exactly 2 votes per round.\n\n• Tap Keep (👍) or Eliminate (👎) on up to 2 properties.\n• Tap the same button again to change your vote.\n• Tap any property card to open discussion.\n• "View Results" shows the group standings.\n• After results, "Open Trip Room" locks in the winner.',
+                  [{ text: 'Got it' }]
+                )
+              }
+              className="ml-2"
+            >
               <Ionicons name="information-circle-outline" size={14} color="#64748B" />
             </Pressable>
           </View>
