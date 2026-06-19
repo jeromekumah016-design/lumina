@@ -10,7 +10,7 @@ type Step = typeof STEPS[number];
 const CITIES = ['Chicago', 'New York', 'Atlanta'] as const;
 
 const REQUIRED_AGREEMENTS = [
-  { key: 'coedTrip', label: 'I understand this is a co-ed group weekend getaway (4 men + 7 women + 1-2 handlers) at a shared vacation rental with other members (strangers).' },
+  { key: 'coedTrip', label: 'I understand this is a co-ed group weekend getaway (5 men + 5 women + 1-2 handlers) at a shared vacation rental with other members (strangers).' },
   { key: 'conduct', label: 'I have read and agree to the Code of Conduct, house rules, and consent policies.' },
   { key: 'safety', label: 'I consent to ID verification (Persona) and background check (Checkr). I understand I cannot be matched until both clear.' },
   { key: 'noRecording', label: 'I understand there is no filming, recording, or streaming of members in v1. Any future media requires explicit per-trip opt-in.' },
@@ -135,7 +135,7 @@ export default function OnboardingScreen() {
               <Text className="text-retro-ink text-[13px] leading-relaxed">
                 Lumina is a paid membership social club that organizes small-group weekend getaways.
                 Members are matched into curated groups of{' '}
-                <Text className="font-semibold">exactly 4 men + 7 women (11 total)</Text> plus 1-2
+                <Text className="font-semibold">an equal 5 men + 5 women (10 total)</Text> plus 1-2
                 handlers, and travel together to a booked vacation rental for the weekend.
               </Text>
               <Text className="text-retro-ink text-[12px] mt-2 font-semibold">
@@ -202,7 +202,7 @@ export default function OnboardingScreen() {
                 ))}
               </View>
               <Text className="text-[11px] text-gray-400 mt-1.5">
-                Groups are formed as exactly 4 men + 7 women. Other may be counted toward the 7 or
+                Groups are formed as an equal 5 men + 5 women. Other may be counted toward either side or
                 not eligible for fixed-ratio trips (disclosed at signup).
               </Text>
             </View>

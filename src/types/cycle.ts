@@ -25,7 +25,7 @@ export interface Cycle {
   startDate: string; // display-friendly e.g. "Apr 12"
   endDate: string; // display-friendly e.g. "Apr 15, 2026"
   winner: CycleWinner;
-  groupSize: number; // 11 for now (4 men / 7 women)
+  groupSize: number; // 10 for now (equal 5 men / 5 women)
   participants: CycleParticipant[];
   photos: string[]; // 3–6 high-quality image URLs
   highlights: string[]; // 3–5 short memorable moments

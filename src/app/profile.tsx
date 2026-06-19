@@ -23,7 +23,7 @@ export default function Profile() {
         <Text className="text-2xl font-extrabold tracking-tight text-retro-ink">Your Profile</Text>
         <Text className="text-retro-amber ml-1">✦</Text>
       </View>
-      <Text className="text-retro-dark">Lumina member • 11 friends in group</Text>
+      <Text className="text-retro-dark">Lumina member • 10 friends in group</Text>
 
       {/* Journey status - new */}
       <View className="mt-5 mb-2">
@@ -57,7 +57,7 @@ export default function Profile() {
       </View>
 
       <View className="mt-2 mb-3 flex-row items-center justify-between">
-        <Text className="font-extrabold text-retro-ink">Your Group (7 women + 4 men)</Text>
+        <Text className="font-extrabold text-retro-ink">Your Group (5 women + 5 men)</Text>
         <View className="bg-sky-100 border border-black px-2 py-0.5 rounded-full">
           <Text className="text-[10px] text-retro-ink font-bold">Matched</Text>
         </View>

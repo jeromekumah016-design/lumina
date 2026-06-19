@@ -15,7 +15,7 @@ const PRICE = 39;
 const PLAN = 'Monthly';
 
 const BENEFITS = [
-  'Access to curated 4M + 7F weekend trips',
+  'Access to curated 5M + 5F weekend trips',
   'Priority matching in your preferred city',
   'All lodging + activities included in trip fee',
   'Safety team (handlers + safety person) on every trip',
@@ -109,7 +109,7 @@ export default function SubscribeScreen() {
 
             <View className="mt-5 bg-sky-100 border-2 border-black rounded-2xl p-4">
               <Text className="text-xs text-retro-ink">
-                <Text className="font-extrabold">Important:</Text> Your membership gives you access to be matched into groups of exactly 4 men + 7 women for weekend trips at shared rentals. This is a real in-person social experience with strangers.
+                <Text className="font-extrabold">Important:</Text> Your membership gives you access to be matched into groups of an equal 5 men + 5 women for weekend trips at shared rentals. This is a real in-person social experience with strangers.
               </Text>
             </View>
           </>
@@ -124,7 +124,7 @@ export default function SubscribeScreen() {
 
             <View className="mt-6 w-full bg-retro-paper border-2 border-black shadow-retro-sm rounded-2xl p-4">
               <Text className="font-extrabold text-retro-ink">What's next?</Text>
-              <Text className="text-sm text-retro-dark mt-1">Join the queue for your city and get placed into a forming 4M + 7F group.</Text>
+              <Text className="text-sm text-retro-dark mt-1">Join the queue for your city and get placed into a forming 5M + 5F group.</Text>
             </View>
 
             <Pressable onPress={handleGoToMatching} className="mt-4 w-full bg-retro-blue py-3.5 rounded-xl border-2 border-black shadow-retro items-center">

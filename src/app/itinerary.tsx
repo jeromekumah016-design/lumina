@@ -33,19 +33,18 @@ export default function Trips() {
     { city: 'Atlanta', day: 'Day 3', activity: 'Decatur market & close', time: 'All day' },
   ];
 
-  // Use matched group or fallback to standard 11
+  // Use matched group or fallback to the standard equal 5 + 5
   const groupMembers = matchedGroup || [
     { name: 'Emma', gender: 'FEMALE' },
     { name: 'Olivia', gender: 'FEMALE' },
     { name: 'Sophia', gender: 'FEMALE' },
     { name: 'Isabella', gender: 'FEMALE' },
     { name: 'Mia', gender: 'FEMALE' },
-    { name: 'Ava', gender: 'FEMALE' },
-    { name: 'Charlotte', gender: 'FEMALE' },
     { name: 'Liam', gender: 'MALE' },
     { name: 'Noah', gender: 'MALE' },
     { name: 'Oliver', gender: 'MALE' },
     { name: 'James', gender: 'MALE' },
+    { name: 'Lucas', gender: 'MALE' },
   ];
 
   return (
@@ -65,7 +64,7 @@ export default function Trips() {
             </View>
             <View className="flex-1">
               <Text className="font-extrabold text-retro-ink text-lg">Your Current Matched Trip</Text>
-              <Text className="text-sm font-semibold text-retro-blue">{currentTripCity || 'Your City'} • This Weekend • 11 members</Text>
+              <Text className="text-sm font-semibold text-retro-blue">{currentTripCity || 'Your City'} • This Weekend • 10 members</Text>
             </View>
             <Pressable onPress={() => router.push('/game' as any)} className="bg-retro-blue border-2 border-black px-3 py-1.5 rounded-full">
               <Text className="text-white text-xs font-bold">Go to Game</Text>
@@ -74,7 +73,7 @@ export default function Trips() {
 
           {/* Group members preview */}
           <View className="mt-2">
-            <Text className="text-xs uppercase tracking-widest font-bold text-retro-dark mb-1">Your Group (4 men + 7 women)</Text>
+            <Text className="text-xs uppercase tracking-widest font-bold text-retro-dark mb-1">Your Group (5 men + 5 women)</Text>
             <View className="flex-row flex-wrap">
               {groupMembers.map((m, i) => (
                 <View key={i} className="bg-white border border-black rounded-full px-2 py-0.5 mr-1 mb-1 flex-row items-center">

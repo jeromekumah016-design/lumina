@@ -28,7 +28,7 @@ export default function Feed() {
       <View className="mt-4 bg-retro-paper border-2 border-black shadow-retro-sm rounded-2xl p-3 flex-row items-center">
         <View className="flex-1">
           <Text className="text-sm font-bold text-retro-ink">{matched ? 'You\'re matched for a trip!' : member ? 'Member • Ready to match' : 'Complete onboarding & subscribe to get matched'}</Text>
-          <Text className="text-xs text-retro-dark">4 men + 7 women groups • weekend getaways</Text>
+          <Text className="text-xs text-retro-dark">5 men + 5 women groups • weekend getaways</Text>
         </View>
         <Pressable onPress={() => router.push((matched ? '/matching' : '/onboarding') as any)} className="bg-retro-blue border-2 border-black px-3 py-1.5 rounded-full">
           <Text className="text-white text-xs font-bold">{matched ? 'View matching' : 'Get started'}</Text>

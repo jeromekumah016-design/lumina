@@ -104,10 +104,9 @@ export const userService = {
     const groupPreview = [
       { name: 'Emma', gender: 'FEMALE' }, { name: 'Olivia', gender: 'FEMALE' },
       { name: 'Sophia', gender: 'FEMALE' }, { name: 'Isabella', gender: 'FEMALE' },
-      { name: 'Mia', gender: 'FEMALE' }, { name: 'Ava', gender: 'FEMALE' },
-      { name: 'Charlotte', gender: 'FEMALE' }, { name: 'Liam', gender: 'MALE' },
+      { name: 'Mia', gender: 'FEMALE' }, { name: 'Liam', gender: 'MALE' },
       { name: 'Noah', gender: 'MALE' }, { name: 'Oliver', gender: 'MALE' },
-      { name: 'James', gender: 'MALE' },
+      { name: 'James', gender: 'MALE' }, { name: 'Lucas', gender: 'MALE' },
     ];
     const matched: MatchingStatus = {
       status: 'matched', queuedCity: current.queuedCity || profile.preferredCity,

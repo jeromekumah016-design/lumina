@@ -6,10 +6,10 @@ import { useLuminaState } from '../context/LuminaContext';
 
 /**
  * Matching / Queue screen — "real matching flow hints".
- * Shows the 4 men + 7 women rule explicitly.
+ * Shows the equal 5 men + 5 women rule explicitly.
  * Queue status, join, simulate daily matching.
  * On successful "match" shows the group preview and deep link to Game.
- * Uses the same 11-person cohort as the PropertySelection game.
+ * Uses the same 10-person cohort as the PropertySelection game.
  */
 
 export default function MatchingScreen() {
@@ -66,10 +66,10 @@ export default function MatchingScreen() {
   const isQueued = matching?.status === 'queued';
 
   // Simple queue visual (demo numbers)
-  const menNeeded = 4;
-  const womenNeeded = 7;
-  const currentMen = isQueued || isMatched ? 3 : 2; // pretend some people are already in
-  const currentWomen = isQueued || isMatched ? 5 : 4;
+  const menNeeded = 5;
+  const womenNeeded = 5;
+  const currentMen = isQueued || isMatched ? 4 : 2; // pretend some people are already in
+  const currentWomen = isQueued || isMatched ? 4 : 3;
 
   return (
     <View className="flex-1 bg-retro-cream">
@@ -95,9 +95,9 @@ export default function MatchingScreen() {
 
         {/* The Rule - prominent, from revamp spec */}
         <View className="bg-sky-100 border-2 border-black shadow-retro-sm rounded-2xl p-4 mb-5">
-          <Text className="font-extrabold text-retro-ink">The 4-to-7 Rule</Text>
+          <Text className="font-extrabold text-retro-ink">The 5-to-5 Rule</Text>
           <Text className="mt-1 text-sm text-retro-ink">
-            Every trip group is formed with <Text className="font-extrabold">exactly 4 men + 7 women = 11 members</Text>, plus 1–2 optional handlers (organizers).
+            Every trip group is formed with <Text className="font-extrabold">an equal 5 men + 5 women = 10 members</Text>, plus 1–2 optional handlers (organizers).
             We only form a group when we have at least that many eligible, verified, subscribed members available for the same city and dates.
           </Text>
           <Text className="text-[11px] font-bold mt-2 text-retro-blue">No partial groups. No silent drops.</Text>
@@ -174,7 +174,7 @@ export default function MatchingScreen() {
             <Text className="font-extrabold text-emerald-700 mb-2">🎉 You're matched!</Text>
             <View className="bg-emerald-100 border-2 border-black shadow-retro-sm rounded-2xl p-4">
               <Text className="text-sm font-semibold text-retro-ink">Your group for {matching?.queuedCity || currentProfile?.preferredCity} weekend</Text>
-              <Text className="text-xs text-retro-dark mt-0.5">4 men + 7 women • exact composition</Text>
+              <Text className="text-xs text-retro-dark mt-0.5">5 men + 5 women • equal composition</Text>
 
               <View className="mt-3 flex-row flex-wrap">
                 {matchResult.groupPreview.map((m, i) => (
@@ -194,7 +194,7 @@ export default function MatchingScreen() {
 
         {!isMatched && (
           <Text className="text-xs text-retro-dark text-center">
-            This is a prototype of the real daily matching engine. In production it loads eligible members (onboarded + verified + active membership + queued) and only creates the trip when the exact 4+7 threshold is met for a city + dates.
+            This is a prototype of the real daily matching engine. In production it loads eligible members (onboarded + verified + active membership + queued) and only creates the trip when the exact 5+5 threshold is met for a city + dates.
           </Text>
         )}
       </ScrollView>

@@ -16,20 +16,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  *     gallery by the current user.
  *
  * Cities follow the same city-first scaling as properties (Chicago / NYC / Atlanta).
- * 7 women + 4 men = 11 per group, matching the platform's gender-aware cohorts.
+ * An equal 5 women + 5 men = 10 per group, matching the platform's gender-balanced cohorts.
  */
 
 const SAVED_KEY = 'lumina:cycle:saved';
 
-// Build an 11-person group (7 women + 4 men) from name lists, with pravatar avatars.
+// Build a 10-person group (equal 5 women + 5 men) from name lists, with pravatar avatars.
 function makeGroup(prefix: string, women: string[], men: string[]): CycleParticipant[] {
-  const w = women.slice(0, 7).map((name, i) => ({
+  const w = women.slice(0, 5).map((name, i) => ({
     id: `${prefix}-w${i + 1}`,
     name,
     gender: 'FEMALE' as const,
     avatarUrl: `https://i.pravatar.cc/64?img=${20 + i}`,
   }));
-  const m = men.slice(0, 4).map((name, i) => ({
+  const m = men.slice(0, 5).map((name, i) => ({
     id: `${prefix}-m${i + 1}`,
     name,
     gender: 'MALE' as const,
@@ -51,11 +51,11 @@ const mockCycles: Cycle[] = [
       pricePerPerson: 95,
       location: 'Wicker Park · Chicago, IL',
     },
-    groupSize: 11,
+    groupSize: 10,
     participants: makeGroup(
       'cyc-chi1',
-      ['Emma', 'Olivia', 'Sophia', 'Isabella', 'Mia', 'Ava', 'Charlotte'],
-      ['Liam', 'Noah', 'Oliver', 'James'],
+      ['Emma', 'Olivia', 'Sophia', 'Isabella', 'Mia'],
+      ['Liam', 'Noah', 'Oliver', 'James', 'Lucas'],
     ),
     photos: [
       'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=900',
@@ -89,11 +89,11 @@ const mockCycles: Cycle[] = [
       pricePerPerson: 85,
       location: 'Lincoln Park · Chicago, IL',
     },
-    groupSize: 11,
+    groupSize: 10,
     participants: makeGroup(
       'cyc-chi2',
-      ['Harper', 'Evelyn', 'Abigail', 'Ella', 'Scarlett', 'Grace', 'Chloe'],
-      ['Lucas', 'Henry', 'Jack', 'Owen'],
+      ['Harper', 'Evelyn', 'Abigail', 'Ella', 'Scarlett'],
+      ['Lucas', 'Henry', 'Jack', 'Owen', 'Leo'],
     ),
     photos: [
       'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=900',
@@ -126,11 +126,11 @@ const mockCycles: Cycle[] = [
       pricePerPerson: 145,
       location: 'Williamsburg · New York, NY',
     },
-    groupSize: 11,
+    groupSize: 10,
     participants: makeGroup(
       'cyc-nyc1',
-      ['Lily', 'Aria', 'Zoe', 'Nora', 'Hazel', 'Luna', 'Stella'],
-      ['Ethan', 'Mason', 'Logan', 'Daniel'],
+      ['Lily', 'Aria', 'Zoe', 'Nora', 'Hazel'],
+      ['Ethan', 'Mason', 'Logan', 'Daniel', 'Ryan'],
     ),
     photos: [
       'https://images.unsplash.com/photo-1600585154340-be6161a56b77?w=900',
@@ -165,11 +165,11 @@ const mockCycles: Cycle[] = [
       pricePerPerson: 165,
       location: 'Brooklyn Heights · New York, NY',
     },
-    groupSize: 11,
+    groupSize: 10,
     participants: makeGroup(
       'cyc-nyc2',
-      ['Penelope', 'Layla', 'Riley', 'Nova', 'Aurora', 'Savannah', 'Brooklyn'],
-      ['Sebastian', 'Jackson', 'Aiden', 'Caleb'],
+      ['Penelope', 'Layla', 'Riley', 'Nova', 'Aurora'],
+      ['Sebastian', 'Jackson', 'Aiden', 'Caleb', 'Eli'],
     ),
     photos: [
       'https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?w=900',
@@ -202,11 +202,11 @@ const mockCycles: Cycle[] = [
       pricePerPerson: 65,
       location: 'Inman Park · Atlanta, GA',
     },
-    groupSize: 11,
+    groupSize: 10,
     participants: makeGroup(
       'cyc-atl1',
-      ['Camila', 'Gianna', 'Elena', 'Maya', 'Naomi', 'Ruby', 'Iris'],
-      ['Julian', 'Leo', 'Miles', 'Theo'],
+      ['Camila', 'Gianna', 'Elena', 'Maya', 'Naomi'],
+      ['Julian', 'Leo', 'Miles', 'Theo', 'Adam'],
     ),
     photos: [
       'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=900',
@@ -240,11 +240,11 @@ const mockCycles: Cycle[] = [
       pricePerPerson: 78,
       location: 'Midtown · Atlanta, GA',
     },
-    groupSize: 11,
+    groupSize: 10,
     participants: makeGroup(
       'cyc-atl2',
-      ['Delilah', 'Cora', 'Eliana', 'Adeline', 'Josephine', 'Vivian', 'Clara'],
-      ['Asher', 'Levi', 'Ezra', 'Jonah'],
+      ['Delilah', 'Cora', 'Eliana', 'Adeline', 'Josephine'],
+      ['Asher', 'Levi', 'Ezra', 'Jonah', 'Max'],
     ),
     photos: [
       'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900',

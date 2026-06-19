@@ -38,7 +38,7 @@ import { GroupVotingStatus, RankedProperty } from '../services/propertyService';
  * vote-sorted standings, elimination logic (top 3 shortlist, bottom marked ELIMINATED), "Finalize round" that advances Day + summary.
  * Reanimated animations: heart pop, modal slide/fade, grid fade on mode/city change.
  *
- * Preserved: Chicago/NYC/Atlanta/Miami fully supported with 6 properties, 6 titled homes/city, 11-person group (7W+4M), live countdown, per-city votes/favs/comments via AsyncStorage.
+ * Preserved: Chicago/NYC/Atlanta/Miami fully supported with 6 properties, 6 titled homes/city, 10-person group (5W+5M), live countdown, per-city votes/favs/comments via AsyncStorage.
  * See refs for visual targets; "Tuscany" style in refs adapted to our city-based trips.
  */
 
@@ -51,7 +51,7 @@ export default function PropertySelectionScreen() {
 
   // Derived for the header avatar cluster (photo-exact layout).
   // Always show up to 3 overlapping avatars + blue pill with +N for the rest.
-  // With the initial 7 women + 4 men (11 total) this yields +8.
+  // With the initial 5 women + 5 men (10 total) this yields +7.
   const displayedAvatars = members.slice(0, 3);
   const extraCount = Math.max(0, members.length - 3);
 
@@ -416,7 +416,7 @@ export default function PropertySelectionScreen() {
             <View className="ml-1 bg-retro-blue px-2 py-0.5 rounded-full border-2 border-black">
               <Text className="text-white text-[10px] font-semibold">+{extraCount}</Text>
             </View>
-            <Text className="ml-2 text-xs text-retro-dark">4 men + 7 women choosing together</Text>
+            <Text className="ml-2 text-xs text-retro-dark">5 men + 5 women choosing together</Text>
           </View>
 
           {/* Feature 1: Live voting progress bar */}
