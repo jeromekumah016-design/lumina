@@ -72,7 +72,14 @@ export default function Profile() {
           <Ionicons name="chevron-forward" size={16} color="#6F6256" />
         </View>
       ))}
-      <Text className="text-[11px] text-retro-dark mt-3 text-center">Full group + chat in Game. Badges, past trips &amp; settings coming soon.</Text>
+      <Text className="text-[11px] text-retro-dark mt-3 text-center">Full group + chat in Game. Badges &amp; settings coming soon.</Text>
+
+      {/* Almost-hidden alumni entry point — quiet by design */}
+      <Pressable onPress={() => router.push('/cycles' as any)} className="mt-3 flex-row items-center justify-center opacity-60">
+        <Text className="text-retro-amber text-[10px] mr-1">✦</Text>
+        <Text className="text-[10px] text-retro-dark underline">Alumni Lumina cycles</Text>
+        <Ionicons name="chevron-forward" size={11} color="#8A7A6E" />
+      </Pressable>
 
       {/* QoL - Reset for easy demoing (will be expanded in task 5) */}
       <View className="mt-8 mb-4">

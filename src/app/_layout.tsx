@@ -88,6 +88,8 @@ export default function TabLayout() {
         <Tabs.Screen name="matching" options={{ href: null }} />
         <Tabs.Screen name="trip-room" options={{ href: null }} />
         <Tabs.Screen name="explore" options={{ href: null }} />
+        <Tabs.Screen name="cycles" options={{ href: null }} />
+        <Tabs.Screen name="cycle-detail" options={{ href: null }} />
       </Tabs>
     </LuminaProvider>
   );

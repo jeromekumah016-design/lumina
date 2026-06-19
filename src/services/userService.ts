@@ -30,6 +30,7 @@ const STORAGE_KEYS = {
   ONBOARDED: 'lumina:user:onboarded',
   MEMBERSHIP: 'lumina:user:membership',
   MATCHING: 'lumina:user:matching',
+  COMPLETED_CYCLES: 'lumina:user:completedCycles',
 } as const;
 
 const DEFAULT_PROFILE: UserProfile = { name: 'Alex Rivera', gender: 'MALE', age: 28, preferredCity: 'Chicago' };
@@ -40,6 +41,7 @@ let cachedProfile: UserProfile | null = null;
 let cachedOnboarded: boolean | null = null;
 let cachedMembership: MembershipStatus | null = null;
 let cachedMatching: MatchingStatus | null = null;
+let cachedCompletedCycles: string[] | null = null;
 
 async function load<T>(key: string, fallback: T): Promise<T> {
   try { const raw = await AsyncStorage.getItem(key); if (raw) return JSON.parse(raw) as T; } catch {}
@@ -118,6 +120,22 @@ export const userService = {
     const reset: MatchingStatus = { status: 'not_queued' };
     await save(STORAGE_KEYS.MATCHING, reset); cachedMatching = reset; return reset;
   },
+  // ── Alumni cycles: the single source of truth for the access GATE ──────────
+  // hasCompletedCycle is DERIVED from this list (length > 0) — never stored as a
+  // separate flag, so the two can't drift out of sync.
+  async getCompletedCycleIds(): Promise<string[]> {
+    if (cachedCompletedCycles) return cachedCompletedCycles;
+    const ids = await load<string[]>(STORAGE_KEYS.COMPLETED_CYCLES, []);
+    cachedCompletedCycles = ids; return ids;
+  },
+  /** Record that the current user has finished a cycle (idempotent). Unlocks the gallery. */
+  async completeCycle(cycleId: string): Promise<string[]> {
+    const current = await this.getCompletedCycleIds();
+    if (current.includes(cycleId)) return current;
+    const updated = [...current, cycleId];
+    await save(STORAGE_KEYS.COMPLETED_CYCLES, updated); cachedCompletedCycles = updated;
+    return updated;
+  },
   async getFullStatus() {
     const [onboarded, profile, membership, matching] = await Promise.all([this.isOnboarded(), this.getProfile(), this.getMembership(), this.getMatchingStatus()]);
     return { onboarded, profile, membership, matching };
@@ -125,5 +143,6 @@ export const userService = {
   async resetAllDemoData(): Promise<void> {
     await AsyncStorage.multiRemove(Object.values(STORAGE_KEYS));
     cachedProfile = null; cachedOnboarded = null; cachedMembership = null; cachedMatching = null;
+    cachedCompletedCycles = null;
   },
 };
