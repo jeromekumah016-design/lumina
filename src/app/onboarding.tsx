@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator } from 
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { userService, Gender } from '../services/userService';
+import { useLuminaState } from '../context/LuminaContext';
 
 /**
  * Onboarding flow for Lumina.
@@ -26,6 +27,7 @@ const REQUIRED_AGREEMENTS = [
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const { completeOnboarding: contextCompleteOnboarding } = useLuminaState();
   const [currentStep, setCurrentStep] = useState<Step>('welcome');
   const [stepIndex, setStepIndex] = useState(0);
 
@@ -99,7 +101,10 @@ export default function OnboardingScreen() {
     if (!allAgreementsChecked || !idVerified || !bgVerified) return;
     setCompleting(true);
     try {
-      await userService.completeOnboarding({
+      // Use the context action so LuminaContext state (onboarded, profile) refreshes
+      // immediately for Feed/Profile screens — calling userService directly would leave
+      // the context's React state stale until the next app restart.
+      await contextCompleteOnboarding({
         name: name.trim() || 'New Member',
         gender,
         age: parseInt(age, 10) || 28,

@@ -596,6 +596,7 @@ export default function PropertySelectionScreen() {
             </KeyboardAvoidingView>
           </Animated.View>
         </Animated.View>
-    </Modal>
+      </Modal>
+    </View>
   );
 }

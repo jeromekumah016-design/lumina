@@ -140,6 +140,11 @@ export const userService = {
     };
     await save(STORAGE_KEYS.MEMBERSHIP, status);
     cachedMembership = status;
+    // Also leave any active queue — a non-member must not remain queued for matching.
+    const matching = await this.getMatchingStatus();
+    if (matching.status !== 'not_queued') {
+      await this.leaveQueueOrReset();
+    }
     return status;
   },
 

@@ -26,6 +26,11 @@ export default function MatchingScreen() {
   const [loading, setLoading] = useState(false);
   const [matchResult, setMatchResult] = useState<{ groupPreview: any[] } | null>(null);
 
+  // Derived — declared before the useEffect below that references them in the dep array.
+  const isMember = membership?.hasActiveMembership;
+  const isMatched = matching?.status === 'matched';
+  const isQueued = matching?.status === 'queued';
+
   const handleJoinQueue = async () => {
     setLoading(true);
     try {
@@ -67,10 +72,6 @@ export default function MatchingScreen() {
   const goToGame = () => {
     router.push('/game');
   };
-
-  const isMember = membership?.hasActiveMembership;
-  const isMatched = matching?.status === 'matched';
-  const isQueued = matching?.status === 'queued';
 
   // Simple queue visual (demo numbers)
   const menNeeded = 4;

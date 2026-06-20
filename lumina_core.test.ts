@@ -1078,3 +1078,112 @@ describe('Feature 4 — Trip Room Service', () => {
     expect(trip.getTotalPerPerson(costs, 11)).toBe(100);
   });
 });
+
+// ───────────────────────────────────────────────────────────────────────────
+// Suite 10 — userService: cancelMembership clears the queue
+// Fixes the state inconsistency where a non-member remained in the matching
+// queue after cancelling, making them eligible for matching without a subscription.
+// ───────────────────────────────────────────────────────────────────────────
+describe('userService — cancelMembership clears matching queue', () => {
+  type UserSvc = typeof import('./src/services/userService').userService;
+  let user: UserSvc;
+
+  beforeEach(() => {
+    jest.resetModules();
+    user = require('./src/services/userService').userService;
+  });
+
+  it('cancelMembership returns hasActiveMembership=false', async () => {
+    await user.subscribe();
+    const status = await user.cancelMembership();
+    expect(status.hasActiveMembership).toBe(false);
+  });
+
+  it('cancelMembership leaves a queued user out of the queue', async () => {
+    await user.subscribe();
+    await user.joinQueue('Chicago');
+    expect((await user.getMatchingStatus()).status).toBe('queued');
+
+    await user.cancelMembership();
+
+    const matching = await user.getMatchingStatus();
+    expect(matching.status).toBe('not_queued');
+  });
+
+  it('cancelMembership on an already-cancelled membership is idempotent', async () => {
+    const status = await user.cancelMembership();
+    expect(status.hasActiveMembership).toBe(false);
+    const status2 = await user.cancelMembership();
+    expect(status2.hasActiveMembership).toBe(false);
+  });
+
+  it('cancelMembership does not affect a user who was never queued', async () => {
+    await user.subscribe();
+    await user.cancelMembership();
+    const matching = await user.getMatchingStatus();
+    expect(matching.status).toBe('not_queued');
+  });
+
+  it('cancelMembership also evicts a matched user from their match', async () => {
+    await user.subscribe();
+    await user.simulateMatch(); // auto-joins queue + matches
+    expect((await user.getMatchingStatus()).status).toBe('matched');
+
+    await user.cancelMembership();
+
+    const matching = await user.getMatchingStatus();
+    expect(matching.status).toBe('not_queued');
+  });
+});
+
+// ───────────────────────────────────────────────────────────────────────────
+// Suite 11 — userService: completeOnboarding + profile persistence
+// Locks in the onboarding fix: profile fields are persisted correctly and
+// the onboarded flag is set, both needed for context refresh after onboarding.
+// ───────────────────────────────────────────────────────────────────────────
+describe('userService — completeOnboarding persistence', () => {
+  type UserSvc = typeof import('./src/services/userService').userService;
+  let user: UserSvc;
+
+  beforeEach(() => {
+    jest.resetModules();
+    user = require('./src/services/userService').userService;
+  });
+
+  it('isOnboarded returns false before completeOnboarding', async () => {
+    expect(await user.isOnboarded()).toBe(false);
+  });
+
+  it('isOnboarded returns true after completeOnboarding', async () => {
+    await user.completeOnboarding({ name: 'Jordan', gender: 'MALE', age: 30, preferredCity: 'Atlanta' });
+    expect(await user.isOnboarded()).toBe(true);
+  });
+
+  it('getProfile returns the supplied fields after completeOnboarding', async () => {
+    await user.completeOnboarding({ name: 'Morgan', gender: 'FEMALE', age: 25, preferredCity: 'New York' });
+    const profile = await user.getProfile();
+    expect(profile.name).toBe('Morgan');
+    expect(profile.gender).toBe('FEMALE');
+    expect(profile.age).toBe(25);
+    expect(profile.preferredCity).toBe('New York');
+  });
+
+  it('completeOnboarding merges partial updates with existing profile', async () => {
+    await user.completeOnboarding({ name: 'Sam', gender: 'MALE', age: 29, preferredCity: 'Chicago' });
+    await user.completeOnboarding({ name: 'Samuel' });
+    const profile = await user.getProfile();
+    expect(profile.name).toBe('Samuel');
+    expect(profile.gender).toBe('MALE');
+    expect(profile.preferredCity).toBe('Chicago');
+  });
+
+  it('getProfile returns updated profile on repeated calls after completeOnboarding (cache is warm)', async () => {
+    await user.completeOnboarding({ name: 'Casey', gender: 'FEMALE', age: 27, preferredCity: 'Atlanta' });
+    // Second call should hit the in-memory cache and return the same updated profile.
+    const profile1 = await user.getProfile();
+    const profile2 = await user.getProfile();
+    expect(profile1.name).toBe('Casey');
+    expect(profile2.name).toBe('Casey');
+    expect(profile1).toEqual(profile2);
+  });
+});

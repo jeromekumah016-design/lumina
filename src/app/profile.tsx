@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Image, Pressable } from 'react-native';
+import { View, Text, ScrollView, Image, Pressable, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useLuminaState } from '../context/LuminaContext';
@@ -23,7 +23,9 @@ export default function Profile() {
         <Text className="text-xl font-semibold text-[#1E40AF]">Your Profile</Text>
         <Text className="text-[#F4C95F] ml-1">✦</Text>
       </View>
-      <Text className="text-retro-dark">Lumina member • 11 friends in group</Text>
+      <Text className="text-retro-dark">
+        {matchStatus === 'matched' ? '11 friends matched' : member ? 'Active member' : 'Complete onboarding to get started'}
+      </Text>
 
       {/* Journey status - new */}
       <View className="mt-5 mb-2">
@@ -83,8 +85,7 @@ export default function Profile() {
         <Pressable 
           onPress={async () => {
             await resetAllDemoData();
-            // Simple feedback
-            alert('Demo data reset. Restart the flow from Feed or Profile.');
+            Alert.alert('Reset complete', 'Demo data cleared. Restart the flow from Feed or Profile.');
           }} 
           className="bg-gray-200 py-2.5 rounded-2xl items-center"
         >
