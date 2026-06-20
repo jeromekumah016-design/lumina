@@ -25,6 +25,9 @@ import { useLuminaState } from '../context/LuminaContext';
 import { trustService } from '../services/trustService';
 import { tripService } from '../services/tripService';
 import { GroupVotingStatus, RankedProperty } from '../services/propertyService';
+import { RETRO_THEME_ENABLED, RETRO_COLORS, RETRO_GLOW, RETRO_FONT } from '../theme/retro';
+import { SynthwaveBackground } from './retro/SynthwaveBackground';
+import { NeonPropertyCard } from './retro/NeonPropertyCard';
 
 /**
  * PropertySelectionScreen = the core "game view" for collaborative property voting in a travel cycle.
@@ -326,6 +329,250 @@ export default function PropertySelectionScreen() {
     return m;
   }, [rankedProperties]);
 
+  // ─── Shared Comments Modal (used in both classic and retro themes) ────────────
+  const commentsModal = (
+    <Modal visible={modalVisible} transparent animationType="none" onRequestClose={closeModal}>
+      <Animated.View style={{ flex: 1, backgroundColor: RETRO_THEME_ENABLED ? 'rgba(10,0,32,0.7)' : 'rgba(0,0,0,0.4)', justifyContent: 'flex-end', opacity: modalOpacity }}>
+        <Animated.View
+          style={{
+            backgroundColor: RETRO_THEME_ENABLED ? RETRO_COLORS.cardBg : '#F5F1E9',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            padding: 16,
+            maxHeight: '70%',
+            borderTopWidth: RETRO_THEME_ENABLED ? 2 : 0,
+            borderLeftWidth: RETRO_THEME_ENABLED ? 2 : 0,
+            borderRightWidth: RETRO_THEME_ENABLED ? 2 : 0,
+            borderColor: RETRO_THEME_ENABLED ? RETRO_COLORS.neonMagenta : 'transparent',
+            transform: [{ translateY: modalTranslate }],
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <Text style={{ fontWeight: '600', color: RETRO_THEME_ENABLED ? RETRO_COLORS.textPrimary : '#0F172A' }}>{selectedProp?.title}</Text>
+            <Pressable onPress={closeModal}>
+              <Ionicons name="close" size={22} color={RETRO_THEME_ENABLED ? RETRO_COLORS.neonCyan : '#0F172A'} />
+            </Pressable>
+          </View>
+          <ScrollView style={{ maxHeight: 288 }}>
+            {comments.length === 0 && (
+              <Text style={{ color: RETRO_THEME_ENABLED ? RETRO_COLORS.textMuted : '#6B7280' }}>No comments yet. Be first!</Text>
+            )}
+            {comments.map((c) => (
+              <View key={c.id} style={{ marginBottom: 8, padding: 8, backgroundColor: RETRO_THEME_ENABLED ? '#1A0040' : '#FFFFFF', borderRadius: 8, borderWidth: 1, borderColor: RETRO_THEME_ENABLED ? RETRO_COLORS.neonPurple : '#F3F4F6' }}>
+                <Text style={{ fontSize: 11, fontWeight: '600', color: RETRO_THEME_ENABLED ? RETRO_COLORS.neonCyan : '#0F172A' }}>
+                  {c.author} <Text style={{ color: RETRO_THEME_ENABLED ? RETRO_COLORS.textMuted : '#9CA3AF' }}>· {c.timestamp}</Text>
+                </Text>
+                <Text style={{ fontSize: 13, marginTop: 2, color: RETRO_THEME_ENABLED ? RETRO_COLORS.textSecondary : '#374151' }}>{c.text}</Text>
+              </View>
+            ))}
+          </ScrollView>
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+            <View style={{ flexDirection: 'row', marginTop: 8, borderTopWidth: 1, borderTopColor: RETRO_THEME_ENABLED ? RETRO_COLORS.neonPurple : '#E5E7EB', paddingTop: 8 }}>
+              <TextInput
+                value={newCommentText}
+                onChangeText={setNewCommentText}
+                placeholder="Add a comment..."
+                placeholderTextColor={RETRO_THEME_ENABLED ? RETRO_COLORS.textMuted : '#9CA3AF'}
+                style={{ flex: 1, backgroundColor: RETRO_THEME_ENABLED ? '#1A0040' : '#FFFFFF', borderWidth: 1, borderColor: RETRO_THEME_ENABLED ? RETRO_COLORS.neonMagenta : '#D1D5DB', borderRadius: 6, paddingHorizontal: 12, paddingVertical: 8, marginRight: 8, color: RETRO_THEME_ENABLED ? RETRO_COLORS.textPrimary : '#0F172A' }}
+                onSubmitEditing={submitComment}
+              />
+              <Pressable onPress={submitComment} style={{ backgroundColor: RETRO_THEME_ENABLED ? RETRO_COLORS.neonMagenta : '#0284C8', paddingHorizontal: 16, borderRadius: 6, alignItems: 'center', justifyContent: 'center', ...RETRO_THEME_ENABLED ? RETRO_GLOW.magenta : {} }}>
+                <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>Send</Text>
+              </Pressable>
+            </View>
+          </KeyboardAvoidingView>
+        </Animated.View>
+      </Animated.View>
+    </Modal>
+  );
+
+  // ─── RETRO THEME RENDER ────────────────────────────────────────────────────
+  if (RETRO_THEME_ENABLED) {
+    return (
+      <SynthwaveBackground>
+        {/* Neon Header */}
+        <View style={{ paddingTop: 48, paddingHorizontal: 16, paddingBottom: 10, backgroundColor: 'rgba(10,0,32,0.82)', borderBottomWidth: 2, borderBottomColor: RETRO_COLORS.neonMagenta }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Pressable style={{ marginRight: 12 }} onPress={() => router.push('/matching' as any)}>
+                <Ionicons name="menu" size={22} color={RETRO_COLORS.neonCyan} />
+              </Pressable>
+              <Text style={{ fontSize: RETRO_FONT.headerSize, fontWeight: '900', color: RETRO_COLORS.neonMagenta, letterSpacing: RETRO_FONT.letterSpacingWide, ...RETRO_GLOW.magenta }}>LUMINA</Text>
+            </View>
+            <Pressable>
+              <Ionicons name="notifications-outline" size={22} color={RETRO_COLORS.neonCyan} />
+            </Pressable>
+          </View>
+
+          {/* PROPERTY SELECTION — DAY X OF Y */}
+          <Text style={{ marginTop: 6, color: RETRO_COLORS.neonCyan, fontSize: RETRO_FONT.labelSize, fontWeight: '700', letterSpacing: RETRO_FONT.letterSpacing, ...RETRO_GLOW.cyan }}>
+            PROPERTY SELECTION — DAY {round?.currentDay || 1} OF {round?.totalDays || 3}
+          </Text>
+
+          {/* TIME REMAINING box */}
+          <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ borderWidth: 2, borderColor: RETRO_COLORS.neonMagenta, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: 'rgba(255,0,255,0.08)', borderRadius: 6, ...RETRO_GLOW.magenta }}>
+              <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 9, fontWeight: '700', letterSpacing: 2, marginBottom: 2 }}>TIME REMAINING</Text>
+              <Text style={{ color: RETRO_COLORS.neonMagenta, fontSize: RETRO_FONT.countdownSize, fontWeight: '900', letterSpacing: 3, fontVariant: ['tabular-nums'] as any }}>{displayCountdown}</Text>
+            </View>
+            <View style={{ alignItems: 'flex-end' }}>
+              <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 9, letterSpacing: 1 }}>VOTES USED</Text>
+              <Text style={{ color: RETRO_COLORS.neonCyan, fontSize: 20, fontWeight: '900', letterSpacing: 2, ...RETRO_GLOW.cyan }}>{userVoteCount}/2</Text>
+            </View>
+          </View>
+
+          {/* Live group vote progress */}
+          {groupVotingStatus && (
+            <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View style={{ flex: 1, height: 3, backgroundColor: 'rgba(255,0,255,0.2)', borderRadius: 2, overflow: 'hidden' }}>
+                <View style={{ height: '100%', width: `${(groupVotingStatus.votedCount / groupVotingStatus.totalMembers) * 100}%`, backgroundColor: RETRO_COLORS.neonMagenta, borderRadius: 2 }} />
+              </View>
+              <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 9, letterSpacing: 1 }}>{groupVotingStatus.votedCount}/{groupVotingStatus.totalMembers} VOTED</Text>
+            </View>
+          )}
+        </View>
+
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 120 }}>
+          {/* Conduct gate */}
+          {!conductAccepted && (
+            <View style={{ margin: 16, marginBottom: 0, backgroundColor: 'rgba(255,165,0,0.1)', borderWidth: 1.5, borderColor: '#FFA500', borderRadius: 10, padding: 12 }}>
+              <Text style={{ color: '#FFA500', fontWeight: '700', letterSpacing: 1 }}>CODE OF CONDUCT REQUIRED</Text>
+              <Text style={{ color: RETRO_COLORS.textSecondary, fontSize: 11, marginTop: 4 }}>Review and accept our Code of Conduct to participate in group voting.</Text>
+              <Pressable onPress={handleAcceptConduct} style={{ marginTop: 8, backgroundColor: '#FFA500', paddingVertical: 8, borderRadius: 6, alignItems: 'center' }}>
+                <Text style={{ color: '#000', fontWeight: '700' }}>ACCEPT &amp; CONTINUE ✓</Text>
+              </Pressable>
+            </View>
+          )}
+
+          {/* City selector — neon chip style */}
+          <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
+            <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 9, letterSpacing: 3, marginBottom: 8 }}>DESTINATION</Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {['Chicago', 'New York', 'Atlanta'].map((city) => (
+                <Pressable
+                  key={city}
+                  onPress={async () => {
+                    await propertyService.setCurrentCity(city);
+                    setCurrentCity(city);
+                    const p = await propertyService.getProperties();
+                    setProperties(p);
+                    setViewMode('vote');
+                    setEliminatedIds(new Set());
+                    setResultsSummary(null);
+                  }}
+                  style={{
+                    flex: 1, paddingVertical: 8, borderRadius: 6, alignItems: 'center',
+                    borderWidth: 2,
+                    borderColor: currentCity === city ? RETRO_COLORS.neonCyan : RETRO_COLORS.neonPurple,
+                    backgroundColor: currentCity === city ? 'rgba(0,255,255,0.12)' : 'rgba(155,48,255,0.08)',
+                    ...(currentCity === city ? RETRO_GLOW.cyan : {}),
+                  }}
+                >
+                  <Text style={{ fontWeight: '700', fontSize: 11, letterSpacing: 1, color: currentCity === city ? RETRO_COLORS.neonCyan : RETRO_COLORS.textSecondary }}>{city.toUpperCase()}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          {/* Budget control */}
+          <View style={{ paddingHorizontal: 16, marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 10, letterSpacing: 1 }}>BUDGET CAP: ${groupBudget}/pp/night</Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <Pressable onPress={() => setGroupBudget(b => Math.max(50, b - 10))} style={{ backgroundColor: 'rgba(155,48,255,0.2)', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 4, borderWidth: 1, borderColor: RETRO_COLORS.neonPurple }}>
+                <Text style={{ color: RETRO_COLORS.neonPurple, fontWeight: '700' }}>−</Text>
+              </Pressable>
+              <Pressable onPress={() => setGroupBudget(b => b + 10)} style={{ backgroundColor: 'rgba(155,48,255,0.2)', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 4, borderWidth: 1, borderColor: RETRO_COLORS.neonPurple }}>
+                <Text style={{ color: RETRO_COLORS.neonPurple, fontWeight: '700' }}>+</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* Avatars row */}
+          <View style={{ paddingHorizontal: 16, marginTop: 10, flexDirection: 'row', alignItems: 'center' }}>
+            {displayedAvatars.map((m, i) => (
+              <Image key={i} source={{ uri: m.avatarUrl }} style={{ width: 30, height: 30, borderRadius: 15, borderWidth: 2, borderColor: RETRO_COLORS.neonCyan, marginLeft: i === 0 ? 0 : -8, zIndex: 10 - i }} />
+            ))}
+            <View style={{ marginLeft: 6, backgroundColor: 'rgba(0,255,255,0.15)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12, borderWidth: 1, borderColor: RETRO_COLORS.neonCyan }}>
+              <Text style={{ color: RETRO_COLORS.neonCyan, fontSize: 9, fontWeight: '700' }}>+{extraCount}</Text>
+            </View>
+            <Text style={{ marginLeft: 8, color: RETRO_COLORS.textMuted, fontSize: 10, letterSpacing: 0.5 }}>4M + 7W CHOOSING TOGETHER</Text>
+          </View>
+
+          {/* How it works */}
+          <View style={{ paddingHorizontal: 16, marginTop: 6, flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable
+              onPress={() => Alert.alert('How voting works', 'Each member gets exactly 2 votes per round.\n\n• Tap KEEP or ELIMINATE on up to 2 properties.\n• Tap the same button again to change your vote.\n• Tap any property card to open discussion.\n• "VIEW RESULTS" shows the group standings.\n• After results, "OPEN TRIP ROOM" locks in the winner.', [{ text: 'Got it' }])}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+            >
+              <Ionicons name="information-circle-outline" size={13} color={RETRO_COLORS.neonPurple} />
+              <Text style={{ color: RETRO_COLORS.neonPurple, fontSize: 9, letterSpacing: 1 }}>HOW IT WORKS</Text>
+            </Pressable>
+          </View>
+
+          {/* Property cards — NeonPropertyCard */}
+          <Animated.View style={[{ paddingHorizontal: 16, paddingTop: 12 }, gridAnimStyle]}>
+            {properties.map((p) => (
+              <NeonPropertyCard
+                key={p.id}
+                property={p}
+                isEliminated={eliminatedIds.has(p.id)}
+                showResultsOverlay={viewMode === 'results'}
+                isOverBudget={!!rankMap[p.id]?.isOverBudget}
+                isTopPick={rankMap[p.id]?.recommendation === 'top-pick'}
+                onVote={handleVote}
+                onFavorite={handleToggleFavorite}
+                onOpenComments={openComments}
+                onReport={handleReport}
+                heartAnimStyle={heartAnimStyle}
+              />
+            ))}
+          </Animated.View>
+
+          {/* Bottom actions — neon style */}
+          <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+            {viewMode === 'vote' ? (
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <Pressable
+                  onPress={computeResults}
+                  style={{ flex: 1, backgroundColor: 'rgba(255,0,255,0.12)', paddingVertical: 14, borderRadius: 8, alignItems: 'center', borderWidth: 2, borderColor: RETRO_COLORS.neonMagenta, ...RETRO_GLOW.magenta }}
+                >
+                  <Text style={{ color: RETRO_COLORS.neonMagenta, fontWeight: '900', letterSpacing: 2, fontSize: 12 }}>VIEW RESULTS</Text>
+                </Pressable>
+                <Pressable
+                  onPress={handleAdvanceRound}
+                  style={{ paddingHorizontal: 16, paddingVertical: 14, borderRadius: 8, alignItems: 'center', borderWidth: 2, borderColor: RETRO_COLORS.neonPurple, backgroundColor: 'rgba(155,48,255,0.1)' }}
+                >
+                  <Text style={{ color: RETRO_COLORS.neonPurple, fontSize: 10, fontWeight: '700', letterSpacing: 1 }}>NEXT DAY</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <View>
+                <Pressable
+                  onPress={() => { setViewMode('vote'); setEliminatedIds(new Set()); setResultsSummary(null); }}
+                  style={{ backgroundColor: 'rgba(0,255,255,0.12)', paddingVertical: 14, borderRadius: 8, alignItems: 'center', borderWidth: 2, borderColor: RETRO_COLORS.neonCyan, ...RETRO_GLOW.cyan }}
+                >
+                  <Text style={{ color: RETRO_COLORS.neonCyan, fontWeight: '900', letterSpacing: 2, fontSize: 12 }}>BACK TO VOTING</Text>
+                </Pressable>
+                <Pressable
+                  onPress={openTripRoom}
+                  style={{ marginTop: 10, backgroundColor: 'rgba(255,107,53,0.2)', paddingVertical: 14, borderRadius: 8, alignItems: 'center', borderWidth: 2, borderColor: RETRO_COLORS.neonOrange, ...RETRO_GLOW.orange }}
+                >
+                  <Text style={{ color: RETRO_COLORS.neonOrange, fontWeight: '900', letterSpacing: 2, fontSize: 12 }}>OPEN TRIP ROOM 🏠</Text>
+                </Pressable>
+              </View>
+            )}
+            {resultsSummary && (
+              <Text style={{ marginTop: 8, textAlign: 'center', color: RETRO_COLORS.textMuted, fontSize: 10, letterSpacing: 0.5 }}>{resultsSummary}</Text>
+            )}
+          </View>
+        </ScrollView>
+
+        {commentsModal}
+      </SynthwaveBackground>
+    );
+  }
+
+  // ─── CLASSIC THEME RENDER (fallback, fully preserved) ─────────────────────
   return (
     <View className="flex-1 bg-retro-cream border-4 border-black shadow-retro">
       {/* Header */}
@@ -554,49 +801,7 @@ export default function PropertySelectionScreen() {
         </View>
       </ScrollView>
 
-      {/* Comments Modal */}
-      <Modal visible={modalVisible} transparent animationType="none" onRequestClose={closeModal}>
-        <Animated.View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end', opacity: modalOpacity }}>
-          <Animated.View
-            style={{
-              backgroundColor: '#F5F1E9',
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              padding: 16,
-              maxHeight: '70%',
-              transform: [{ translateY: modalTranslate }],
-            }}
-          >
-            <View className="flex-row items-center justify-between mb-2">
-              <Text className="font-semibold">{selectedProp?.title}</Text>
-              <Pressable onPress={closeModal}><Ionicons name="close" size={22} /></Pressable>
-            </View>
-            <ScrollView className="max-h-72">
-              {comments.length === 0 && <Text className="text-gray-500">No comments yet. Be first!</Text>}
-              {comments.map((c) => (
-                <View key={c.id} className="mb-2 p-2 bg-white rounded border border-gray-100">
-                  <Text className="text-xs font-semibold">{c.author} <Text className="text-gray-400">· {c.timestamp}</Text></Text>
-                  <Text className="text-sm mt-0.5">{c.text}</Text>
-                </View>
-              ))}
-            </ScrollView>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-              <View className="flex-row mt-2 border-t border-gray-200 pt-2">
-                <TextInput
-                  value={newCommentText}
-                  onChangeText={setNewCommentText}
-                  placeholder="Add a comment..."
-                  className="flex-1 bg-white border border-gray-300 rounded px-3 py-2 mr-2"
-                  onSubmitEditing={submitComment}
-                />
-                <Pressable onPress={submitComment} className="bg-[#0284C8] px-4 rounded items-center justify-center">
-                  <Text className="text-white font-semibold">Send</Text>
-                </Pressable>
-              </View>
-            </KeyboardAvoidingView>
-          </Animated.View>
-        </Animated.View>
-      </Modal>
+      {commentsModal}
     </View>
   );
 }
