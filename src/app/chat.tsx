@@ -22,44 +22,44 @@ export default function Chat() {
       className="flex-1"
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View className="flex-1 bg-retro-cream border-4 border-black shadow-retro">
+      <View className="flex-1 bg-retro-cream">
         <ScrollView className="flex-1 px-4 pt-12" contentContainerStyle={{ paddingBottom: 16 }}>
           <View className="flex-row items-center mb-4">
-            <Text className="text-xl font-semibold text-[#1E40AF]">Group Chat</Text>
-            <Text className="text-[#F4C95F] ml-1 text-lg -mt-0.5">✦</Text>
+            <Text className="text-2xl font-extrabold tracking-tight text-retro-ink">Group Chat</Text>
+            <Text className="text-retro-amber ml-1 text-lg -mt-0.5">✦</Text>
           </View>
           {messages.map((m) => (
             <View
               key={m.id}
-              className={`mb-3 rounded-2xl p-3 ${m.from === 'You' ? 'bg-[#DBEAFE] self-end max-w-[80%]' : 'bg-gray-50 border border-gray-100'}`}
+              className={`mb-3 rounded-xl p-3 border-2 border-black shadow-retro-sm ${m.from === 'You' ? 'bg-sky-100 self-end max-w-[80%]' : 'bg-retro-paper'}`}
             >
               {m.from !== 'You' && (
                 <View className="flex-row items-center mb-1">
-                  <Ionicons name="person-circle-outline" size={16} color="#64748B" />
-                  <Text className="font-medium text-sm ml-1 text-[#0F172A]">{m.from}</Text>
+                  <Ionicons name="person-circle-outline" size={16} color="#1A1612" />
+                  <Text className="font-bold text-sm ml-1 text-retro-ink">{m.from}</Text>
                 </View>
               )}
-              <Text className="text-gray-700">{m.text}</Text>
+              <Text className="text-retro-ink">{m.text}</Text>
             </View>
           ))}
-          <View className="mt-2 bg-[#DBEAFE] rounded-none border-4 border-black p-3">
-            <Text className="text-[11px] text-[#0C4A6E] text-center">Real-time messaging + per-property threads coming in full build.</Text>
+          <View className="mt-2 bg-sky-100 border-2 border-black rounded-xl p-3">
+            <Text className="text-[11px] font-semibold text-retro-ink text-center">Real-time messaging + per-property threads coming in full build.</Text>
           </View>
         </ScrollView>
 
         {/* Compose bar */}
-        <View className="flex-row px-4 py-3 border-t border-gray-200 bg-retro-cream items-center">
+        <View className="flex-row px-4 py-3 border-t-2 border-black bg-retro-cream items-center">
           <TextInput
             value={input}
             onChangeText={setInput}
             placeholder="Message the group..."
-            className="flex-1 bg-white border border-gray-200 rounded-2xl px-4 py-2 mr-2 text-sm"
+            className="flex-1 bg-white border-2 border-black rounded-xl px-4 py-2 mr-2 text-sm"
             onSubmitEditing={sendMessage}
             returnKeyType="send"
           />
           <Pressable
             onPress={sendMessage}
-            className="bg-[#0284C8] w-9 h-9 rounded-full items-center justify-center"
+            className="bg-retro-blue w-9 h-9 rounded-full items-center justify-center border-2 border-black"
           >
             <Ionicons name="send" size={16} color="white" />
           </Pressable>

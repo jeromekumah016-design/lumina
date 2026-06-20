@@ -26,6 +26,8 @@
 
 // ─── helpers ───────────────────────────────────────────────────────────────
 
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+
 /** Load a fresh propertyService instance (fresh module state each call). */
 function freshService() {
   // Must be called AFTER jest.resetModules() to get a new module instance.
@@ -761,9 +763,9 @@ describe('Feature 1 — Live Group Voting Status', () => {
     svc = freshService();
   });
 
-  it('getGroupVotingStatus returns totalMembers = 11', async () => {
+  it('getGroupVotingStatus returns totalMembers = 10', async () => {
     const status = await svc.getGroupVotingStatus();
-    expect(status.totalMembers).toBe(11);
+    expect(status.totalMembers).toBe(10);
   });
 
   it('getGroupVotingStatus starts with votedCount = 4 (demo seed)', async () => {
@@ -781,7 +783,7 @@ describe('Feature 1 — Live Group Voting Status', () => {
     const voted = status.memberStatuses.filter(m => m.hasVoted);
     const notVoted = status.memberStatuses.filter(m => !m.hasVoted);
     expect(voted).toHaveLength(4);
-    expect(notVoted).toHaveLength(7);
+    expect(notVoted).toHaveLength(6);
   });
 
   it('simulateVoteProgress increments votedCount by 1', async () => {

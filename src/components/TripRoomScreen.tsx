@@ -80,33 +80,33 @@ export default function TripRoomScreen({ city, propId }: Props) {
   return (
     <View className="flex-1 bg-retro-cream">
       {/* Header */}
-      <View className="pt-12 px-4 pb-3 bg-[#0F172A]">
+      <View className="pt-12 px-4 pb-3 bg-retro-ink border-b-2 border-black">
         <Pressable onPress={() => router.back()} className="flex-row items-center mb-2">
-          <Ionicons name="arrow-back" size={20} color="#94A3B8" />
-          <Text className="ml-2 text-[#94A3B8] text-sm">Back to Game</Text>
+          <Ionicons name="arrow-back" size={20} color="#D7CCC0" />
+          <Text className="ml-2 text-[#D7CCC0] text-sm font-semibold">Back to Game</Text>
         </Pressable>
         <View className="flex-row items-center">
-          <Text className="text-2xl font-bold text-white">Trip Room</Text>
+          <Text className="text-2xl font-extrabold tracking-tight text-retro-cream">Trip Room</Text>
           <Text className="ml-2 text-xl">🏠</Text>
         </View>
         {winner && (
-          <Text className="text-[#0284C8] text-sm mt-0.5">Winner: {winner.title}</Text>
+          <Text className="text-retro-amber text-sm font-bold mt-0.5">Winner: {winner.title}</Text>
         )}
-        <Text className="text-[#64748B] text-xs mt-0.5">{city} · {memberCount} members</Text>
+        <Text className="text-[#A89A8C] text-xs mt-0.5">{city} · {memberCount} members</Text>
       </View>
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }}>
 
         {/* Winner card */}
         {winner && (
-          <View className="mx-4 mt-4 bg-amber-50 border border-amber-300 rounded-2xl p-3">
+          <View className="mx-4 mt-4 bg-retro-amber border-2 border-black shadow-retro rounded-2xl p-3">
             <View className="flex-row items-center mb-1">
-              <Text className="text-amber-600 font-bold text-base">🏆 {winner.title}</Text>
+              <Text className="text-retro-ink font-extrabold text-base">🏆 {winner.title}</Text>
             </View>
-            <Text className="text-xs text-amber-700">{winner.location.city} · ${winner.pricePerPerson}/person/night</Text>
+            <Text className="text-xs text-retro-ink">{winner.location.city} · ${winner.pricePerPerson}/person/night</Text>
             <View className="flex-row mt-1 gap-3">
-              <Text className="text-xs text-emerald-700">👍 {winner.keepVotes} keeps</Text>
-              <Text className="text-xs text-rose-600">👎 {winner.eliminateVotes} elims</Text>
+              <Text className="text-xs font-bold text-emerald-800">👍 {winner.keepVotes} keeps</Text>
+              <Text className="text-xs font-bold text-rose-700">👎 {winner.eliminateVotes} elims</Text>
             </View>
           </View>
         )}
@@ -114,52 +114,52 @@ export default function TripRoomScreen({ city, propId }: Props) {
         {/* Itinerary */}
         <View className="mx-4 mt-4">
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-base font-bold text-[#0F172A]">📅 Itinerary</Text>
-            <Pressable onPress={() => setShowItinForm(v => !v)} className="bg-[#0284C8] px-3 py-1 rounded-full">
-              <Text className="text-white text-xs font-medium">+ Add</Text>
+            <Text className="text-base font-extrabold text-retro-ink">📅 Itinerary</Text>
+            <Pressable onPress={() => setShowItinForm(v => !v)} className="bg-retro-blue px-3 py-1 rounded-full border-2 border-black shadow-retro-sm">
+              <Text className="text-white text-xs font-bold">+ Add</Text>
             </Pressable>
           </View>
 
           {showItinForm && (
-            <View className="mb-3 bg-white border border-gray-200 rounded-xl p-3">
+            <View className="mb-3 bg-retro-paper border-2 border-black shadow-retro-sm rounded-xl p-3">
               <TextInput
                 value={newActivity}
                 onChangeText={setNewActivity}
                 placeholder="Activity name"
-                className="border border-gray-300 rounded px-3 py-2 mb-2 text-sm"
+                className="bg-white border-2 border-black rounded-lg px-3 py-2 mb-2 text-sm"
               />
               <TextInput
                 value={newLocation}
                 onChangeText={setNewLocation}
                 placeholder="Location (optional)"
-                className="border border-gray-300 rounded px-3 py-2 mb-2 text-sm"
+                className="bg-white border-2 border-black rounded-lg px-3 py-2 mb-2 text-sm"
               />
               <TextInput
                 value={newDay}
                 onChangeText={setNewDay}
                 placeholder="Day (1, 2, 3...)"
                 keyboardType="numeric"
-                className="border border-gray-300 rounded px-3 py-2 mb-2 text-sm"
+                className="bg-white border-2 border-black rounded-lg px-3 py-2 mb-2 text-sm"
               />
               <View className="flex-row gap-2">
-                <Pressable onPress={handleAddItinerary} className="flex-1 bg-[#0284C8] py-2 rounded-lg items-center">
-                  <Text className="text-white text-sm font-semibold">Add</Text>
+                <Pressable onPress={handleAddItinerary} className="flex-1 bg-retro-blue py-2 rounded-lg border-2 border-black items-center">
+                  <Text className="text-white text-sm font-bold">Add</Text>
                 </Pressable>
-                <Pressable onPress={() => setShowItinForm(false)} className="px-4 py-2 rounded-lg border border-gray-300 items-center">
-                  <Text className="text-sm text-gray-600">Cancel</Text>
+                <Pressable onPress={() => setShowItinForm(false)} className="px-4 py-2 rounded-lg bg-white border-2 border-black items-center">
+                  <Text className="text-sm font-semibold text-retro-ink">Cancel</Text>
                 </Pressable>
               </View>
             </View>
           )}
 
           {itinerary.map(item => (
-            <View key={item.id} className="mb-2 flex-row items-start bg-white border border-gray-100 rounded-xl p-3">
-              <View className="bg-[#DBEAFE] px-2 py-0.5 rounded-full mr-3">
-                <Text className="text-[10px] font-bold text-[#0284C8]">Day {item.day}</Text>
+            <View key={item.id} className="mb-2 flex-row items-start bg-retro-paper border-2 border-black shadow-retro-sm rounded-xl p-3">
+              <View className="bg-retro-blue border border-black px-2 py-0.5 rounded-full mr-3">
+                <Text className="text-[10px] font-bold text-white">Day {item.day}</Text>
               </View>
               <View className="flex-1">
-                <Text className="text-sm font-semibold text-[#0F172A]">{item.time} · {item.activity}</Text>
-                <Text className="text-xs text-gray-500 mt-0.5">{item.location}</Text>
+                <Text className="text-sm font-bold text-retro-ink">{item.time} · {item.activity}</Text>
+                <Text className="text-xs text-retro-dark mt-0.5">{item.location}</Text>
               </View>
             </View>
           ))}
@@ -168,58 +168,58 @@ export default function TripRoomScreen({ city, propId }: Props) {
         {/* Cost Split */}
         <View className="mx-4 mt-4">
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-base font-bold text-[#0F172A]">💰 Cost Split</Text>
-            <Pressable onPress={() => setShowCostForm(v => !v)} className="bg-[#0284C8] px-3 py-1 rounded-full">
-              <Text className="text-white text-xs font-medium">+ Add</Text>
+            <Text className="text-base font-extrabold text-retro-ink">💰 Cost Split</Text>
+            <Pressable onPress={() => setShowCostForm(v => !v)} className="bg-retro-blue px-3 py-1 rounded-full border-2 border-black shadow-retro-sm">
+              <Text className="text-white text-xs font-bold">+ Add</Text>
             </Pressable>
           </View>
 
           {showCostForm && (
-            <View className="mb-3 bg-white border border-gray-200 rounded-xl p-3">
+            <View className="mb-3 bg-retro-paper border-2 border-black shadow-retro-sm rounded-xl p-3">
               <TextInput
                 value={newDesc}
                 onChangeText={setNewDesc}
                 placeholder="Description"
-                className="border border-gray-300 rounded px-3 py-2 mb-2 text-sm"
+                className="bg-white border-2 border-black rounded-lg px-3 py-2 mb-2 text-sm"
               />
               <TextInput
                 value={newAmount}
                 onChangeText={setNewAmount}
                 placeholder="Amount ($)"
                 keyboardType="numeric"
-                className="border border-gray-300 rounded px-3 py-2 mb-2 text-sm"
+                className="bg-white border-2 border-black rounded-lg px-3 py-2 mb-2 text-sm"
               />
               <TextInput
                 value={newPaidBy}
                 onChangeText={setNewPaidBy}
                 placeholder="Paid by (name)"
-                className="border border-gray-300 rounded px-3 py-2 mb-2 text-sm"
+                className="bg-white border-2 border-black rounded-lg px-3 py-2 mb-2 text-sm"
               />
               <View className="flex-row gap-2">
-                <Pressable onPress={handleAddCost} className="flex-1 bg-[#0284C8] py-2 rounded-lg items-center">
-                  <Text className="text-white text-sm font-semibold">Add</Text>
+                <Pressable onPress={handleAddCost} className="flex-1 bg-retro-blue py-2 rounded-lg border-2 border-black items-center">
+                  <Text className="text-white text-sm font-bold">Add</Text>
                 </Pressable>
-                <Pressable onPress={() => setShowCostForm(false)} className="px-4 py-2 rounded-lg border border-gray-300 items-center">
-                  <Text className="text-sm text-gray-600">Cancel</Text>
+                <Pressable onPress={() => setShowCostForm(false)} className="px-4 py-2 rounded-lg bg-white border-2 border-black items-center">
+                  <Text className="text-sm font-semibold text-retro-ink">Cancel</Text>
                 </Pressable>
               </View>
             </View>
           )}
 
           {costs.map(c => (
-            <View key={c.id} className="mb-2 flex-row items-center justify-between bg-white border border-gray-100 rounded-xl p-3">
+            <View key={c.id} className="mb-2 flex-row items-center justify-between bg-retro-paper border-2 border-black shadow-retro-sm rounded-xl p-3">
               <View className="flex-1">
-                <Text className="text-sm font-semibold text-[#0F172A]">{c.description}</Text>
-                <Text className="text-xs text-gray-500">Paid by {c.paidBy}</Text>
+                <Text className="text-sm font-bold text-retro-ink">{c.description}</Text>
+                <Text className="text-xs text-retro-dark">Paid by {c.paidBy}</Text>
               </View>
-              <Text className="text-sm font-bold text-[#0F172A]">${c.amount.toLocaleString()}</Text>
+              <Text className="text-sm font-extrabold text-retro-ink">${c.amount.toLocaleString()}</Text>
             </View>
           ))}
 
           {costs.length > 0 && (
-            <View className="mt-2 bg-[#0F172A] rounded-xl p-3 flex-row items-center justify-between">
-              <Text className="text-white text-sm font-semibold">Each person owes</Text>
-              <Text className="text-emerald-400 text-lg font-bold">${perPerson.toFixed(2)}</Text>
+            <View className="mt-2 bg-retro-ink border-2 border-black shadow-retro-sm rounded-xl p-3 flex-row items-center justify-between">
+              <Text className="text-retro-cream text-sm font-bold">Each person owes</Text>
+              <Text className="text-retro-amber text-lg font-extrabold">${perPerson.toFixed(2)}</Text>
             </View>
           )}
         </View>
@@ -228,10 +228,10 @@ export default function TripRoomScreen({ city, propId }: Props) {
         <View className="mx-4 mt-5">
           <Pressable
             onPress={() => router.push('/chat' as any)}
-            className="bg-[#0284C8] py-3 rounded-2xl items-center flex-row justify-center gap-2"
+            className="bg-retro-blue py-3 rounded-xl border-2 border-black shadow-retro items-center flex-row justify-center gap-2"
           >
             <Ionicons name="chatbubble-ellipses" size={18} color="white" />
-            <Text className="text-white font-semibold">Chat with the Group</Text>
+            <Text className="text-white font-bold">Chat with the Group</Text>
           </Pressable>
         </View>
       </ScrollView>

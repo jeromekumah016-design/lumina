@@ -80,11 +80,9 @@ export const tripService = {
   computeCostSplits(costs: CostItem[], memberCount: number): CostSplit[] {
     if (!memberCount || !costs.length) return [];
     const total = costs.reduce((sum, c) => sum + c.amount, 0);
-    const perPerson = Math.round((total / memberCount) * 100) / 100;
-    // Each payer is owed back by others; simplify to "everyone owes X per person"
     return costs.map(c => ({
       memberName: c.paidBy,
-      owes: Math.round(((perPerson * memberCount - c.amount) / memberCount) * 100) / 100,
+      owes: Math.round(((total - c.amount) / memberCount) * 100) / 100,
     }));
   },
 

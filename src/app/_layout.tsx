@@ -1,24 +1,27 @@
 import "../../global.css";
 import { Tabs } from 'expo-router';
-import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 import { LuminaProvider } from '../context/LuminaContext';
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
+const INK = '#1A1612';
+const CREAM = '#F5F1E9';
+const INACTIVE = '#8A7A6E';
+const BLUE = '#0284C8';
 
+export default function TabLayout() {
   return (
     <LuminaProvider>
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: '#FF00AA',
-          tabBarInactiveTintColor: '#00AAFF',
+          tabBarActiveTintColor: INK,
+          tabBarInactiveTintColor: INACTIVE,
+          tabBarLabelStyle: { fontWeight: '700', fontSize: 10 },
           tabBarStyle: {
-            backgroundColor: '#1A1A2E',
-            borderTopWidth: 3, borderTopColor: '#FFCC00',
+            backgroundColor: CREAM,
+            borderTopWidth: 2,
+            borderTopColor: '#000',
           },
         }}>
         <Tabs.Screen
@@ -46,8 +49,10 @@ export default function TabLayout() {
             tabBarIcon: ({ color, focused }) => (
               <View
                 style={{
-                  backgroundColor: focused ? '#007AFF' : 'transparent',
+                  backgroundColor: focused ? BLUE : 'transparent',
                   borderRadius: 20,
+                  borderWidth: focused ? 2 : 0,
+                  borderColor: '#000',
                   padding: 4,
                 }}>
                 <Ionicons
@@ -84,6 +89,8 @@ export default function TabLayout() {
         <Tabs.Screen name="matching" options={{ href: null }} />
         <Tabs.Screen name="trip-room" options={{ href: null }} />
         <Tabs.Screen name="explore" options={{ href: null }} />
+        <Tabs.Screen name="cycles" options={{ href: null }} />
+        <Tabs.Screen name="cycle-detail" options={{ href: null }} />
       </Tabs>
     </LuminaProvider>
   );

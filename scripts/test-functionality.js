@@ -1,7 +1,7 @@
 // scripts/test-functionality.js
 // Standalone Node.js functionality test for Lumina's Property Selection "game" core.
 // Tests the data model + service logic that powers PropertySelectionScreen.tsx
-// (cities-first scaling, 6 homes/city with titles, 11-person group (7W+4M), keep/eliminate voting,
+// (cities-first scaling, 6 homes/city with titles, 10-person group (5W+5M), keep/eliminate voting,
 // favorites, optimistic updates, city switching, round, avatar math, persistence simulation).
 // No React Native, no Expo, no server start. Pure verification of the "actual app" logic.
 //
@@ -21,7 +21,7 @@ const section = (title) => console.log('\n=== ' + title + ' ===');
 
 console.log('=== Lumina Mobile App - Functionality Test (core game logic) ===');
 console.log('Testing data + service behavior that the PropertySelectionScreen relies on.');
-console.log('Covers user requirements: cities (Chicago/NYC/Atlanta), each home titles, 7 women + 4 men group,');
+console.log('Covers user requirements: cities (Chicago/NYC/Atlanta), each home titles, 5 women + 5 men group,');
 console.log('Keep/Eliminate voting with count updates + myVote, favorites, city switching, live round data, +N avatars.\n');
 
 // === Inlined data from src/services/propertyService.ts (source of truth for demo) ===
@@ -187,14 +187,14 @@ const propertyService = {
   assert(atlProps.some(p => p.title.includes('Midtown Modern Loft')), 'Atlanta has Midtown title');
   assert(atlProps.some(p => p.title.includes('Decatur Cottage')), 'Atlanta has Decatur title');
 
-  section('Group members: 7 women + 4 men = 11 total (for header avatars +N)');
+  section('Group members: 5 women + 5 men = 10 total (for header avatars +N)');
   const members = await propertyService.getMembers();
-  assert(members.length === 11, 'exactly 11 members');
-  // Names match the documented split (first 7 women names, last 4 men)
-  const womenNames = ['Emma','Olivia','Sophia','Isabella','Mia','Ava','Charlotte'];
-  const menNames = ['Liam','Noah','Oliver','James'];
-  assert(members.slice(0,7).every((m,i) => m.name === womenNames[i]), 'first 7 are the women');
-  assert(members.slice(7).every((m,i) => m.name === menNames[i]), 'last 4 are the men');
+  assert(members.length === 10, 'exactly 10 members');
+  // Names match the documented split (first 5 women names, last 5 men)
+  const womenNames = ['Emma','Olivia','Sophia','Isabella','Mia'];
+  const menNames = ['Liam','Noah','Oliver','James','Lucas'];
+  assert(members.slice(0,5).every((m,i) => m.name === womenNames[i]), 'first 5 are the women');
+  assert(members.slice(5).every((m,i) => m.name === menNames[i]), 'last 5 are the men');
 
   // Screen logic: displayedAvatars + extraCount pill
   const displayedAvatars = members.slice(0, 3);

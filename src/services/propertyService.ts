@@ -315,26 +315,25 @@ let currentRound: Round = {
 
 /**
  * Initial group members for the demo cycle ("to start").
- * 7 women + 4 men = 11 total participants.
+ * 5 women + 5 men = 10 total participants (equal gender balance).
  * This seeds the header avatars (first 3 shown overlapping + blue +N pill) for the Property Selection game.
  * Matches the gender balance intent from the platform matching engine (gender-aware cohorts).
  * Avatars use pravatar with seeds chosen for presentation; names are first names only.
  * The group size / composition is per-cycle (same across cities for now).
  */
 const mockMembers: Member[] = [
-  // 7 women
+  // 5 women
   { id: 'u1', name: 'Emma', avatarUrl: 'https://i.pravatar.cc/32?img=28' },
   { id: 'u2', name: 'Olivia', avatarUrl: 'https://i.pravatar.cc/32?img=29' },
   { id: 'u3', name: 'Sophia', avatarUrl: 'https://i.pravatar.cc/32?img=32' },
   { id: 'u4', name: 'Isabella', avatarUrl: 'https://i.pravatar.cc/32?img=35' },
   { id: 'u5', name: 'Mia', avatarUrl: 'https://i.pravatar.cc/32?img=40' },
-  { id: 'u6', name: 'Ava', avatarUrl: 'https://i.pravatar.cc/32?img=47' },
-  { id: 'u7', name: 'Charlotte', avatarUrl: 'https://i.pravatar.cc/32?img=49' },
-  // 4 men
-  { id: 'u8', name: 'Liam', avatarUrl: 'https://i.pravatar.cc/32?img=12' },
-  { id: 'u9', name: 'Noah', avatarUrl: 'https://i.pravatar.cc/32?img=15' },
-  { id: 'u10', name: 'Oliver', avatarUrl: 'https://i.pravatar.cc/32?img=18' },
-  { id: 'u11', name: 'James', avatarUrl: 'https://i.pravatar.cc/32?img=60' },
+  // 5 men
+  { id: 'u6', name: 'Liam', avatarUrl: 'https://i.pravatar.cc/32?img=12' },
+  { id: 'u7', name: 'Noah', avatarUrl: 'https://i.pravatar.cc/32?img=15' },
+  { id: 'u8', name: 'Oliver', avatarUrl: 'https://i.pravatar.cc/32?img=18' },
+  { id: 'u9', name: 'James', avatarUrl: 'https://i.pravatar.cc/32?img=60' },
+  { id: 'u10', name: 'Lucas', avatarUrl: 'https://i.pravatar.cc/32?img=33' },
 ];
 
 /**
@@ -452,7 +451,7 @@ export const propertyService = {
       const activeCount = persistedList.filter(p => p.myVote != null).length;
       const alreadyVotedHere = currentVote != null;
       if (!alreadyVotedHere && activeCount >= 2) {
-        // Limit reached — return unchanged so UI can show message/disable
+        // Limit reached - return unchanged so UI can show message/disable
         return { ...prop };
       }
     }
@@ -554,4 +553,31 @@ export const propertyService = {
     currentRound.deadline = new Date(Date.now() + 1000 * 60 * 60 * 18 + 1000 * 60 * 30).toISOString();
     return { ...currentRound };
   },
+  /**
+   * FIX #2: Full in-memory + AsyncStorage reset for demo.
+   * Called by LuminaContext.resetAllDemoData so property votes/favorites/comments
+   * are wiped alongside user state.
+   */
+  async resetAll(): Promise<void> {
+    // 1. Reset in-memory mock data (votes, favorites)
+    for (const city of Object.keys(mockPropertiesByCity)) {
+      for (const prop of mockPropertiesByCity[city]) {
+        prop.myVote = null;
+        prop.isFavorited = false;
+      }
+    }
+    // 2. Reset runtime comments store back to seed data
+    for (const city of Object.keys(commentsStore)) {
+      commentsStore[city] = JSON.parse(JSON.stringify(seedComments[city] || {}));
+    }
+    // 3. Wipe all lumina: AsyncStorage keys
+    try {
+      const allKeys = await AsyncStorage.getAllKeys();
+      const luminaKeys = allKeys.filter((k) => k.startsWith('lumina:'));
+      if (luminaKeys.length > 0) await AsyncStorage.multiRemove(luminaKeys);
+    } catch (e) {
+      console.warn('propertyService.resetAll: AsyncStorage wipe failed', e);
+    }
+  },
+
 };

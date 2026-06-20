@@ -39,18 +39,18 @@ See src/components/PropertySelectionScreen.tsx for the core UI.
 ## Project structure
 - src/app/ : tab screens (Feed, Trips, Game, Chat, Profile)
 - src/components/PropertySelectionScreen.tsx : the main game view
-- src/services/propertyService.ts : mock data for properties per city, group (7 women 4 men)
+- src/services/propertyService.ts : mock data for properties per city, group (5 women 5 men)
 
 ## Next
 - Continue polishing UI (more screens, animations, real data)
 - Add features: vote limits enforcement (2 votes), results view, per-property comments, full onboarding
-- Align closer to full Lumina product (4M/7F matching, membership)
+- Align closer to full Lumina product (equal 5M/5F matching, membership)
 - Build for release later
 
 Recent: Game screen + supporting tabs polished + new flows.
-- Onboarding wizard (welcome, profile+gender+city, explicit 4M/7F co-ed trip disclosures + conduct, ID/BG verify stubs, complete).
+- Onboarding wizard (welcome, profile+gender+city, explicit 5M/5F co-ed trip disclosures + conduct, ID/BG verify stubs, complete).
 - Membership/Subscribe screen (pricing, benefits, mock subscribe that activates hasActiveMembership).
-- Matching/Queue screen (4-to-7 rule explanation, queue visuals, join + simulateMatch that forms group and links to Game).
+- Matching/Queue screen (5-to-5 rule explanation, queue visuals, join + simulateMatch that forms group and links to Game).
 - Profile and Feed now surface journey status and quick links to the new screens.
 - userService.ts for persisted onboarding/membership/matching state.
 Core game test + tsc clean.
