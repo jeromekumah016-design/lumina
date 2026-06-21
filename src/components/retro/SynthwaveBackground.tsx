@@ -69,7 +69,7 @@ function Star({ x, y, size, delay }: { x: number; y: number; size: number; delay
 }
 
 // ─── Sun component ────────────────────────────────────────────────────────────
-function SynthwaveSun() {
+function SynthwaveSun({ upperLeft = false }: { upperLeft?: boolean }) {
   const pulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -84,8 +84,8 @@ function SynthwaveSun() {
   }, [pulse]);
 
   const SUN_R = 72;
-  const cx = W / 2;
-  const sunTop = H * 0.28; // where the sun sits in the sky
+  const cx = upperLeft ? W * 0.18 : W / 2;
+  const sunTop = upperLeft ? H * 0.1 : H * 0.28; // upper-left or centered
 
   return (
     <Animated.View
@@ -286,7 +286,13 @@ function ScanlineOverlay() {
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
-export function SynthwaveBackground({ children }: { children?: React.ReactNode }) {
+export function SynthwaveBackground({
+  children,
+  sunUpperLeft = false,
+}: {
+  children?: React.ReactNode;
+  sunUpperLeft?: boolean;
+}) {
   const scrollAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -324,7 +330,7 @@ export function SynthwaveBackground({ children }: { children?: React.ReactNode }
       ))}
 
       {/* Sun */}
-      <SynthwaveSun />
+      <SynthwaveSun upperLeft={sunUpperLeft} />
 
       {/* Grid floor */}
       <PerspectiveGrid scrollAnim={scrollAnim} />

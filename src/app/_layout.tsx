@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 import { LuminaProvider } from '../context/LuminaContext';
+import { RETRO_THEME_ENABLED, RETRO_COLORS } from '../theme/retro';
 
 const INK = '#1A1612';
 const CREAM = '#F5F1E9';
@@ -15,14 +16,20 @@ export default function TabLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: INK,
-          tabBarInactiveTintColor: INACTIVE,
-          tabBarLabelStyle: { fontWeight: '700', fontSize: 10 },
-          tabBarStyle: {
-            backgroundColor: CREAM,
-            borderTopWidth: 2,
-            borderTopColor: '#000',
-          },
+          tabBarActiveTintColor: RETRO_THEME_ENABLED ? RETRO_COLORS.neonMagenta : INK,
+          tabBarInactiveTintColor: RETRO_THEME_ENABLED ? RETRO_COLORS.textMuted : INACTIVE,
+          tabBarLabelStyle: { fontWeight: '700', fontSize: 10, letterSpacing: RETRO_THEME_ENABLED ? 0.5 : 0 },
+          tabBarStyle: RETRO_THEME_ENABLED
+            ? {
+                backgroundColor: 'rgba(10,0,32,0.97)',
+                borderTopWidth: 2,
+                borderTopColor: RETRO_COLORS.neonMagenta,
+              }
+            : {
+                backgroundColor: CREAM,
+                borderTopWidth: 2,
+                borderTopColor: '#000',
+              },
         }}>
         <Tabs.Screen
           name="index"

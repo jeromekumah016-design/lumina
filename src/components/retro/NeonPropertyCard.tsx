@@ -31,6 +31,8 @@ export interface NeonPropertyCardProps {
   onOpenComments: (property: Property) => void;
   onReport?: (property: Property) => void;
   heartAnimStyle?: object;
+  /** Compact 2-column mode — smaller image, cyan title, pink location, mockup-style footer */
+  compact?: boolean;
 }
 
 // ─── Synthwave gradient placeholder (no imageUrl) ─────────────────────────────
@@ -78,6 +80,7 @@ export function NeonPropertyCard({
   onOpenComments,
   onReport,
   heartAnimStyle,
+  compact = false,
 }: NeonPropertyCardProps) {
   const borderPulse = useRef(new Animated.Value(0.7)).current;
 
@@ -111,7 +114,7 @@ export function NeonPropertyCard({
       />
 
       {/* ── Image area ── */}
-      <View style={styles.imageContainer}>
+      <View style={[styles.imageContainer, compact && { height: 110 }]}>
         {p.imageUrl ? (
           <Image source={{ uri: p.imageUrl }} style={styles.image} resizeMode="cover" />
         ) : (
@@ -123,7 +126,14 @@ export function NeonPropertyCard({
 
         {/* Price badge — top left */}
         <View style={styles.priceBadge}>
-          <Text style={styles.priceBadgeText}>${p.pricePerPerson}<Text style={styles.priceBadgeSub}>/pp</Text></Text>
+          {compact ? (
+            <Text style={styles.priceBadgeText}>
+              ${p.pricePerPerson}
+              <Text style={styles.priceBadgeSub}>{'\n'}/ PER PERSON</Text>
+            </Text>
+          ) : (
+            <Text style={styles.priceBadgeText}>${p.pricePerPerson}<Text style={styles.priceBadgeSub}>/pp</Text></Text>
+          )}
         </View>
 
         {/* Heart — top right */}
@@ -167,56 +177,77 @@ export function NeonPropertyCard({
       </View>
 
       {/* ── Card body ── */}
-      <View style={styles.body}>
-        <Text style={styles.title} numberOfLines={1}>{p.title}</Text>
-        <Text style={styles.location}>{p.location.city}, {p.location.country}</Text>
+      <View style={[styles.body, compact && { padding: 8 }]}>
+        <Text
+          style={[styles.title, compact && { color: RETRO_COLORS.neonCyan, fontSize: 11, letterSpacing: 0.5 }]}
+          numberOfLines={1}
+        >
+          {compact ? p.title.toUpperCase() : p.title}
+        </Text>
+        <Text style={[styles.location, compact && { color: RETRO_COLORS.neonPink, fontSize: 9 }]}>
+          {p.location.city}, {p.location.country}
+        </Text>
 
         {isOverBudget && (
           <Text style={styles.budgetWarning}>⚠ OVER BUDGET</Text>
         )}
 
         {/* Divider line */}
-        <View style={styles.divider} />
+        <View style={[styles.divider, compact && { marginVertical: 5 }]} />
 
         {/* KEEP / ELIMINATE buttons */}
         <View style={styles.buttonRow}>
           <Pressable
             onPress={() => onVote(p.id, keepActive ? null : 'keep')}
-            style={[styles.actionBtn, styles.keepBtn, keepActive && styles.keepBtnActive]}
+            style={[styles.actionBtn, styles.keepBtn, keepActive && styles.keepBtnActive, compact && { paddingVertical: 5 }]}
           >
-            <Ionicons name="thumbs-up" size={13} color={keepActive ? '#000020' : RETRO_COLORS.keepText} />
-            <Text style={[styles.actionBtnText, styles.keepText, keepActive && styles.keepTextActive]}>
-              KEEP · {p.keepVotes}
+            <Ionicons name="thumbs-up" size={compact ? 11 : 13} color={keepActive ? '#000020' : RETRO_COLORS.keepText} />
+            <Text style={[styles.actionBtnText, styles.keepText, keepActive && styles.keepTextActive, compact && { fontSize: 9 }]}>
+              {compact ? 'KEEP' : `KEEP · ${p.keepVotes}`}
             </Text>
           </Pressable>
 
           <Pressable
             onPress={() => onVote(p.id, elimActive ? null : 'eliminate')}
-            style={[styles.actionBtn, styles.elimBtn, elimActive && styles.elimBtnActive]}
+            style={[styles.actionBtn, styles.elimBtn, elimActive && styles.elimBtnActive, compact && { paddingVertical: 5 }]}
           >
-            <Ionicons name="thumbs-down" size={13} color={elimActive ? '#FFFFFF' : RETRO_COLORS.elimText} />
-            <Text style={[styles.actionBtnText, styles.elimText, elimActive && styles.elimTextActive]}>
-              ELIM · {p.eliminateVotes}
+            <Ionicons name="thumbs-down" size={compact ? 11 : 13} color={elimActive ? '#FFFFFF' : RETRO_COLORS.elimText} />
+            <Text style={[styles.actionBtnText, styles.elimText, elimActive && styles.elimTextActive, compact && { fontSize: 9 }]}>
+              {compact ? 'ELIM' : `ELIM · ${p.eliminateVotes}`}
             </Text>
           </Pressable>
         </View>
 
-        {/* Footer: comment count + report */}
-        <View style={styles.footer}>
-          <Pressable onPress={() => onOpenComments(p)} style={styles.commentBtn}>
-            <Ionicons name="chatbubble-outline" size={13} color={RETRO_COLORS.neonCyan} />
-            <Text style={styles.commentCount}>{p.commentCount}</Text>
-          </Pressable>
-          {onReport && (
-            <Pressable onPress={() => onReport(p)} hitSlop={6}>
-              <Ionicons name="flag-outline" size={13} color={RETRO_COLORS.textMuted} />
+        {/* Footer: vote count (compact) or comment count + report (full) */}
+        {compact ? (
+          <View style={styles.footer}>
+            <Text style={{ color: RETRO_COLORS.neonCyan, fontSize: 9, fontWeight: '700', letterSpacing: 0.5 }}>
+              {p.keepVotes} VOTES
+            </Text>
+            <Pressable onPress={() => onOpenComments(p)} style={[styles.commentBtn, { marginLeft: 'auto' }]}>
+              <Ionicons name="chatbubble-outline" size={11} color={RETRO_COLORS.neonCyan} />
+              <Text style={[styles.commentCount, { fontSize: 9 }]}>{p.commentCount}</Text>
             </Pressable>
-          )}
-          {/* My-vote accent dot */}
-          {p.myVote && (
-            <View style={[styles.voteDot, { backgroundColor: p.myVote === 'keep' ? RETRO_COLORS.neonCyan : RETRO_COLORS.neonMagenta }]} />
-          )}
-        </View>
+            {p.myVote && (
+              <View style={[styles.voteDot, { backgroundColor: p.myVote === 'keep' ? RETRO_COLORS.neonCyan : RETRO_COLORS.neonMagenta }]} />
+            )}
+          </View>
+        ) : (
+          <View style={styles.footer}>
+            <Pressable onPress={() => onOpenComments(p)} style={styles.commentBtn}>
+              <Ionicons name="chatbubble-outline" size={13} color={RETRO_COLORS.neonCyan} />
+              <Text style={styles.commentCount}>{p.commentCount}</Text>
+            </Pressable>
+            {onReport && (
+              <Pressable onPress={() => onReport(p)} hitSlop={6}>
+                <Ionicons name="flag-outline" size={13} color={RETRO_COLORS.textMuted} />
+              </Pressable>
+            )}
+            {p.myVote && (
+              <View style={[styles.voteDot, { backgroundColor: p.myVote === 'keep' ? RETRO_COLORS.neonCyan : RETRO_COLORS.neonMagenta }]} />
+            )}
+          </View>
+        )}
       </View>
     </Pressable>
   );
