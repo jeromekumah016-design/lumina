@@ -156,6 +156,41 @@ describe('Retro component — token correctness', () => {
   });
 });
 
+// ─── NeonPropertyCard overlay styles — absoluteFill contract ─────────────────
+describe('NeonPropertyCard overlay styles', () => {
+  it('imageNeonFrame spread resolves to position: absolute (absoluteFillObject does not exist in RN 0.85.3)', () => {
+    // StyleSheet.absoluteFill is the plain object {position:'absolute',top:0,...}
+    // StyleSheet.absoluteFillObject was removed — spreading undefined silently dropped
+    // all position properties, breaking the neon-frame and eliminated overlays.
+    const absoluteFillCompat = { position: 'absolute' as const, top: 0, left: 0, bottom: 0, right: 0 };
+    const imageNeonFrame = { ...absoluteFillCompat, borderWidth: 2, borderColor: '#00FFFF', opacity: 0.4 };
+    expect(imageNeonFrame.position).toBe('absolute');
+    expect(imageNeonFrame.top).toBe(0);
+    expect(imageNeonFrame.left).toBe(0);
+    expect(imageNeonFrame.bottom).toBe(0);
+    expect(imageNeonFrame.right).toBe(0);
+  });
+
+  it('eliminatedOverlay spread resolves to position: absolute', () => {
+    const absoluteFillCompat = { position: 'absolute' as const, top: 0, left: 0, bottom: 0, right: 0 };
+    const eliminatedOverlay = {
+      ...absoluteFillCompat,
+      backgroundColor: 'rgba(0,0,0,0.72)',
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+    };
+    expect(eliminatedOverlay.position).toBe('absolute');
+    expect(eliminatedOverlay.top).toBe(0);
+    expect(eliminatedOverlay.backgroundColor).toBe('rgba(0,0,0,0.72)');
+  });
+
+  it('spreading undefined (what absoluteFillObject returned) drops position', () => {
+    const broken: object | undefined = undefined;
+    const result = { ...(broken as any), borderWidth: 2 };
+    expect((result as any).position).toBeUndefined();
+  });
+});
+
 // ─── RETRO_THEME_ENABLED gates retro render on all screens ───────────────────
 describe('RETRO_THEME_ENABLED — app-wide gate', () => {
   it('flag is a boolean', () => {

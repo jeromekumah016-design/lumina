@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   imageNeonFrame: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderWidth: 2,
     borderColor: RETRO_COLORS.neonCyan,
     opacity: 0.4,
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
 
   // Eliminated overlay
   eliminatedOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0,0,0,0.72)',
     alignItems: 'center',
     justifyContent: 'center',

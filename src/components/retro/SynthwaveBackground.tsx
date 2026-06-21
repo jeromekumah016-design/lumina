@@ -198,7 +198,7 @@ function PalmTree({ x, scale = 1, flip = false }: { x: number; scale?: number; f
 }
 
 // ─── Perspective grid floor ───────────────────────────────────────────────────
-function PerspectiveGrid({ scrollAnim }: { scrollAnim: Animated.Value }) {
+function PerspectiveGrid() {
   const HORIZON_Y = H * 0.48;
   const FLOOR_H = H - HORIZON_Y;
   const VANISH_X = W / 2;
@@ -293,19 +293,6 @@ export function SynthwaveBackground({
   children?: React.ReactNode;
   sunUpperLeft?: boolean;
 }) {
-  const scrollAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.timing(scrollAnim, {
-        toValue: 1,
-        duration: RETRO_TIMING.gridScroll,
-        useNativeDriver: true,
-      })
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [scrollAnim]);
 
   return (
     <View style={styles.root}>
@@ -333,7 +320,7 @@ export function SynthwaveBackground({
       <SynthwaveSun upperLeft={sunUpperLeft} />
 
       {/* Grid floor */}
-      <PerspectiveGrid scrollAnim={scrollAnim} />
+      <PerspectiveGrid />
 
       {/* Palm silhouettes */}
       <PalmTree x={-10} scale={1.0} />
