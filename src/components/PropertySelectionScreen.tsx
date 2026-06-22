@@ -83,7 +83,6 @@ export default function PropertySelectionScreen() {
 
   // Feature 3: conduct gate + safety report
   const [conductAccepted, setConductAccepted] = useState(true);
-  const [reportingProp, setReportingProp] = useState<Property | null>(null);
 
   // Animation shared values (reanimated)
   const modalTranslate = useSharedValue(400);
@@ -297,7 +296,6 @@ export default function PropertySelectionScreen() {
 
   // Feature 3: safety report via Alert (no extra Modal needed)
   const handleReport = (prop: Property) => {
-    setReportingProp(prop);
     Alert.alert(
       'Report Safety Concern',
       `Report "${prop.title}" for a safety issue?`,
@@ -425,19 +423,61 @@ export default function PropertySelectionScreen() {
               <Ionicons name="menu" size={20} color={RETRO_COLORS.neonCyan} />
             </Pressable>
 
-            {/* Lumina — italic glowing script-style logo */}
-            <Text style={{
-              fontSize: 30,
-              fontWeight: '900',
-              fontStyle: 'italic',
-              color: RETRO_COLORS.neonPink,
-              letterSpacing: 4,
-              textShadowColor: RETRO_COLORS.neonPink,
-              textShadowOffset: { width: 0, height: 0 },
-              textShadowRadius: 14,
-            }}>
-              Lumina
-            </Text>
+            {/* Lumina — neon script logo (stacked layers: outer halo + bright core).
+                No script font package available; italic-bold + multi-layer glow
+                approximates the neon-sign look from the mockup. */}
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              {/* Outer diffuse halo — transparent text, large shadow radius */}
+              <Text
+                style={{
+                  position: 'absolute',
+                  fontSize: 30,
+                  fontWeight: '900',
+                  fontStyle: 'italic',
+                  color: 'transparent',
+                  letterSpacing: 4,
+                  textShadowColor: RETRO_COLORS.neonPink,
+                  textShadowOffset: { width: 0, height: 0 },
+                  textShadowRadius: 28,
+                }}
+                selectable={false}
+              >
+                Lumina
+              </Text>
+              {/* Mid glow */}
+              <Text
+                style={{
+                  position: 'absolute',
+                  fontSize: 30,
+                  fontWeight: '900',
+                  fontStyle: 'italic',
+                  color: 'transparent',
+                  letterSpacing: 4,
+                  textShadowColor: RETRO_COLORS.neonMagenta,
+                  textShadowOffset: { width: 0, height: 0 },
+                  textShadowRadius: 16,
+                }}
+                selectable={false}
+              >
+                Lumina
+              </Text>
+              {/* Bright core — near-white pink so center reads as lit neon tube */}
+              <Text
+                style={{
+                  fontSize: 30,
+                  fontWeight: '900',
+                  fontStyle: 'italic',
+                  color: '#FFD0E8',
+                  letterSpacing: 4,
+                  textShadowColor: RETRO_COLORS.neonPink,
+                  textShadowOffset: { width: 0, height: 0 },
+                  textShadowRadius: 8,
+                }}
+                selectable={false}
+              >
+                Lumina
+              </Text>
+            </View>
 
             {/* Bell in cyan neon rounded-square */}
             <Pressable
@@ -755,7 +795,7 @@ export default function PropertySelectionScreen() {
         <View className="px-4 pt-3">
           <Text className="text-xs uppercase tracking-widest text-retro-dark mb-1.5">DESTINATION</Text>
           <View className="flex-row gap-2">
-            {['Chicago', 'New York', 'Atlanta'].map((city) => (
+            {['Coastal Demo', 'Chicago', 'New York', 'Atlanta'].map((city) => (
               <Pressable
                 key={city}
                 onPress={async () => {

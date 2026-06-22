@@ -148,11 +148,85 @@ function SynthwaveSun({ upperLeft = false }: { upperLeft?: boolean }) {
   );
 }
 
+// ─── City skyline silhouette ─────────────────────────────────────────────────
+// Simple building silhouettes sitting at the horizon line, between the sun
+// and the palm trees. Neon-edged dark shapes with tiny window lights.
+const SKYLINE_BUILDINGS: { xFrac: number; wFrac: number; h: number }[] = [
+  { xFrac: 0.00, wFrac: 0.055, h: 44 },
+  { xFrac: 0.04, wFrac: 0.035, h: 64 },
+  { xFrac: 0.07, wFrac: 0.06,  h: 50 },
+  { xFrac: 0.12, wFrac: 0.04,  h: 80 },
+  { xFrac: 0.15, wFrac: 0.05,  h: 58 },
+  { xFrac: 0.19, wFrac: 0.06,  h: 42 },
+  { xFrac: 0.24, wFrac: 0.04,  h: 72 },
+  { xFrac: 0.27, wFrac: 0.055, h: 88 },
+  { xFrac: 0.32, wFrac: 0.035, h: 60 },
+  { xFrac: 0.35, wFrac: 0.065, h: 96 }, // cluster near center-left
+  { xFrac: 0.41, wFrac: 0.04,  h: 78 },
+  { xFrac: 0.44, wFrac: 0.05,  h: 55 },
+  { xFrac: 0.48, wFrac: 0.04,  h: 88 },
+  { xFrac: 0.51, wFrac: 0.055, h: 100 }, // tallest — center
+  { xFrac: 0.56, wFrac: 0.04,  h: 72 },
+  { xFrac: 0.59, wFrac: 0.06,  h: 60 },
+  { xFrac: 0.64, wFrac: 0.04,  h: 82 },
+  { xFrac: 0.67, wFrac: 0.055, h: 48 },
+  { xFrac: 0.72, wFrac: 0.04,  h: 70 },
+  { xFrac: 0.75, wFrac: 0.06,  h: 86 },
+  { xFrac: 0.80, wFrac: 0.035, h: 52 },
+  { xFrac: 0.83, wFrac: 0.055, h: 66 },
+  { xFrac: 0.88, wFrac: 0.04,  h: 44 },
+  { xFrac: 0.91, wFrac: 0.05,  h: 58 },
+  { xFrac: 0.95, wFrac: 0.05,  h: 40 },
+];
+const SKYLINE_MAX_H = 104; // headroom above horizon for clip container
+
+function CitySkyline() {
+  const HORIZON_Y = H * 0.48;
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        top: HORIZON_Y - SKYLINE_MAX_H,
+        left: 0,
+        width: W,
+        height: SKYLINE_MAX_H,
+        overflow: 'hidden',
+      }}
+      pointerEvents="none"
+    >
+      {SKYLINE_BUILDINGS.map((b, i) => (
+        <View
+          key={i}
+          style={{
+            position: 'absolute',
+            left: b.xFrac * W,
+            bottom: 0,
+            width: b.wFrac * W,
+            height: b.h,
+            backgroundColor: '#07001A',
+            borderTopWidth: 1,
+            borderTopColor: i % 3 === 0 ? RETRO_COLORS.neonPurple : RETRO_COLORS.neonMagenta,
+            opacity: 0.92,
+          }}
+        >
+          {/* A couple of tiny window lights per building */}
+          {b.h > 55 && (
+            <View style={{ position: 'absolute', top: 8, left: '20%', width: 2, height: 2, backgroundColor: RETRO_COLORS.neonCyan, opacity: 0.7 }} />
+          )}
+          {b.h > 70 && (
+            <View style={{ position: 'absolute', top: 18, right: '20%', width: 2, height: 2, backgroundColor: RETRO_COLORS.neonPink, opacity: 0.6 }} />
+          )}
+        </View>
+      ))}
+    </View>
+  );
+}
+
 // ─── Palm tree silhouette ─────────────────────────────────────────────────────
 function PalmTree({ x, scale = 1, flip = false }: { x: number; scale?: number; flip?: boolean }) {
   const trunk = { width: 10 * scale, height: 80 * scale };
-  const frondColor = '#0D0020';
-  const trunkColor = '#0D0020';
+  const frondColor = RETRO_COLORS.palmFrond;
+  const trunkColor = RETRO_COLORS.palmTrunk;
 
   return (
     <View
@@ -254,8 +328,13 @@ function PerspectiveGrid() {
               height: len,
               backgroundColor: i % 2 === 0 ? RETRO_COLORS.gridLine : RETRO_COLORS.gridLineAlt,
               opacity: 0.55,
-              transform: [{ rotate: `${angle}deg` }, { translateX: 0 }],
-              transformOrigin: 'top center',
+              // Rotate around top-center using translate sequence instead of
+              // transformOrigin (partial Android support in RN 0.82+).
+              transform: [
+                { translateY: -(len / 2) },
+                { rotate: `${angle}deg` },
+                { translateY: len / 2 },
+              ],
             }}
           />
         );
@@ -321,6 +400,9 @@ export function SynthwaveBackground({
 
       {/* Grid floor */}
       <PerspectiveGrid />
+
+      {/* City skyline — sits at the horizon between grid floor and palms */}
+      <CitySkyline />
 
       {/* Palm silhouettes */}
       <PalmTree x={-10} scale={1.0} />

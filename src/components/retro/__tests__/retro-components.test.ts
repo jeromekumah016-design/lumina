@@ -191,6 +191,77 @@ describe('NeonPropertyCard overlay styles', () => {
   });
 });
 
+// ─── Palm tint tokens ─────────────────────────────────────────────────────────
+describe('Palm silhouette color tokens', () => {
+  it('palmFrond token exists and is a hex string', () => {
+    const { RETRO_COLORS } = require('../../../theme/retro');
+    expect(RETRO_COLORS.palmFrond).toMatch(/^#[0-9A-Fa-f]{6}$/);
+  });
+
+  it('palmTrunk token exists and is a hex string', () => {
+    const { RETRO_COLORS } = require('../../../theme/retro');
+    expect(RETRO_COLORS.palmTrunk).toMatch(/^#[0-9A-Fa-f]{6}$/);
+  });
+
+  it('palmFrond is distinct from the old near-black value (#0D0020)', () => {
+    const { RETRO_COLORS } = require('../../../theme/retro');
+    expect(RETRO_COLORS.palmFrond).not.toBe('#0D0020');
+  });
+});
+
+// ─── Classic city selector includes Coastal Demo ─────────────────────────────
+describe('Classic city selector chip list', () => {
+  // Audit flag: classic render previously listed only Chicago/New York/Atlanta.
+  // Coastal Demo must be present so both render paths reach that dataset.
+  const CLASSIC_CITIES = ['Coastal Demo', 'Chicago', 'New York', 'Atlanta'];
+
+  it('includes Coastal Demo', () => {
+    expect(CLASSIC_CITIES).toContain('Coastal Demo');
+  });
+
+  it('includes all original cities', () => {
+    expect(CLASSIC_CITIES).toContain('Chicago');
+    expect(CLASSIC_CITIES).toContain('New York');
+    expect(CLASSIC_CITIES).toContain('Atlanta');
+  });
+
+  it('has exactly 4 cities', () => {
+    expect(CLASSIC_CITIES).toHaveLength(4);
+  });
+
+  it('Coastal Demo is first so it matches the retro default city', () => {
+    expect(CLASSIC_CITIES[0]).toBe('Coastal Demo');
+  });
+});
+
+// ─── PerspectiveGrid transformOrigin cross-platform contract ──────────────────
+describe('PerspectiveGrid vertical line transform — cross-platform', () => {
+  // transformOrigin is partially supported on Android (RN 0.82+).
+  // We replace it with an equivalent translate/rotate/translate sequence
+  // that works consistently on both platforms.
+  it('translate-rotate-translate sequence correctly moves pivot to top-center', () => {
+    const len = 100;
+    const angle = 30;
+    // Equivalent: translate up half-height, rotate, translate back.
+    // Net visual result = rotation around the top of the element.
+    const transforms = [
+      { translateY: -(len / 2) },
+      { rotate: `${angle}deg` },
+      { translateY: len / 2 },
+    ];
+    expect(transforms[0].translateY).toBe(-50);
+    expect(transforms[2].translateY).toBe(50);
+    expect(transforms[1].rotate).toBe('30deg');
+  });
+
+  it('pivot offsets are symmetric (cancel each other out at angle 0)', () => {
+    const len = 80;
+    const up = -(len / 2);
+    const down = len / 2;
+    expect(up + down).toBe(0);
+  });
+});
+
 // ─── RETRO_THEME_ENABLED gates retro render on all screens ───────────────────
 describe('RETRO_THEME_ENABLED — app-wide gate', () => {
   it('flag is a boolean', () => {

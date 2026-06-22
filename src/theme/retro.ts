@@ -55,6 +55,10 @@ export const RETRO_COLORS = {
   elimActive: '#400030',
   elimText: '#FF00FF',
 
+  // Palm silhouettes — neon purple/magenta tint (token-driven for easy tuning)
+  palmFrond: '#2B0060',   // deep purple-magenta frond silhouette
+  palmTrunk: '#1A003A',   // slightly lighter purple trunk
+
   // Overlays
   overlay: 'rgba(10, 0, 32, 0.85)',
   scanline: 'rgba(0, 0, 0, 0.15)',
