@@ -541,9 +541,9 @@ export default function PropertySelectionScreen() {
             </View>
 
             {/* ── TWO-COLUMN PROPERTY GRID ── */}
-            <Animated.View style={[{ paddingHorizontal: 10, paddingTop: 10, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, gridAnimStyle]}>
+            <Animated.View style={[{ paddingHorizontal: 10, paddingTop: 10, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }, gridAnimStyle]}>
               {properties.map((p) => (
-                <View key={p.id} style={{ width: '48.5%' }}>
+                <View key={p.id} style={{ flexBasis: '49%', maxWidth: '49%' }}>
                   <NeonPropertyCard
                     property={p}
                     isEliminated={eliminatedIds.has(p.id)}

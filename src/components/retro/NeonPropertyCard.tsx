@@ -211,7 +211,7 @@ export function NeonPropertyCard({
             style={[styles.actionBtn, styles.elimBtn, elimActive && styles.elimBtnActive, compact && { paddingVertical: 5 }]}
           >
             <Text style={[styles.actionBtnText, styles.elimText, elimActive && styles.elimTextActive, compact && { fontSize: 9 }]}>
-              {compact ? 'ELIMINATE' : `ELIM · ${p.eliminateVotes}`}
+              {compact ? 'ELIMINATE' : `ELIMINATE · ${p.eliminateVotes}`}
             </Text>
           </Pressable>
         </View>
