@@ -28,7 +28,6 @@ import { GroupVotingStatus, RankedProperty } from '../services/propertyService';
 import { RETRO_THEME_ENABLED, RETRO_COLORS, RETRO_GLOW, RETRO_FONT, RETRO_SIZE } from '../theme/retro';
 import { SynthwaveBackground } from './retro/SynthwaveBackground';
 import { NeonPropertyCard } from './retro/NeonPropertyCard';
-import { formatMockupCountdown as _formatMockupCountdown } from '../utils/countdown';
 
 /**
  * PropertySelectionScreen = the core "game view" for collaborative property voting in a travel cycle.
@@ -63,10 +62,10 @@ export default function PropertySelectionScreen() {
   const displayCountdown = timeLeft;
 
   // Parse countdown parts for the multi-line mockup time display (18H 42M / 17s)
-  const _cdParts = displayCountdown.split(':');
-  const cdH = parseInt(_cdParts[0] || '0', 10);
-  const cdM = parseInt(_cdParts[1] || '0', 10);
-  const cdS = parseInt(_cdParts[2] || '0', 10);
+  const cdParts = displayCountdown.split(':');
+  const cdH = parseInt(cdParts[0] || '0', 10);
+  const cdM = parseInt(cdParts[1] || '0', 10);
+  const cdS = parseInt(cdParts[2] || '0', 10);
 
   // --- New state for results/elimination, comments modal, vote budget, animations ---
   const [viewMode, setViewMode] = useState<'vote' | 'results'>('vote');
