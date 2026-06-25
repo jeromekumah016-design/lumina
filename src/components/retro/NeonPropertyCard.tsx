@@ -101,7 +101,7 @@ export function NeonPropertyCard({
   return (
     <Pressable
       onPress={() => onOpenComments(p)}
-      style={[styles.card, isEliminated && styles.cardEliminated]}
+      style={[styles.card, compact && styles.cardCompact, isEliminated && styles.cardEliminated]}
     >
       {/* Neon glow border (animated opacity) */}
       <Animated.View
@@ -201,7 +201,6 @@ export function NeonPropertyCard({
             onPress={() => onVote(p.id, keepActive ? null : 'keep')}
             style={[styles.actionBtn, styles.keepBtn, keepActive && styles.keepBtnActive, compact && { paddingVertical: 5 }]}
           >
-            <Ionicons name="thumbs-up" size={compact ? 11 : 13} color={keepActive ? '#000020' : RETRO_COLORS.keepText} />
             <Text style={[styles.actionBtnText, styles.keepText, keepActive && styles.keepTextActive, compact && { fontSize: 9 }]}>
               {compact ? 'KEEP' : `KEEP · ${p.keepVotes}`}
             </Text>
@@ -211,9 +210,8 @@ export function NeonPropertyCard({
             onPress={() => onVote(p.id, elimActive ? null : 'eliminate')}
             style={[styles.actionBtn, styles.elimBtn, elimActive && styles.elimBtnActive, compact && { paddingVertical: 5 }]}
           >
-            <Ionicons name="thumbs-down" size={compact ? 11 : 13} color={elimActive ? '#FFFFFF' : RETRO_COLORS.elimText} />
             <Text style={[styles.actionBtnText, styles.elimText, elimActive && styles.elimTextActive, compact && { fontSize: 9 }]}>
-              {compact ? 'ELIM' : `ELIM · ${p.eliminateVotes}`}
+              {compact ? 'ELIMINATE' : `ELIM · ${p.eliminateVotes}`}
             </Text>
           </Pressable>
         </View>
@@ -221,12 +219,13 @@ export function NeonPropertyCard({
         {/* Footer: vote count (compact) or comment count + report (full) */}
         {compact ? (
           <View style={styles.footer}>
-            <Text style={{ color: RETRO_COLORS.neonCyan, fontSize: 9, fontWeight: '700', letterSpacing: 0.5 }}>
+            <Ionicons name="person-outline" size={11} color={RETRO_COLORS.neonPink} />
+            <Text style={{ color: RETRO_COLORS.neonPink, fontSize: 9, fontWeight: '700', letterSpacing: 0.5 }}>
               {p.keepVotes} VOTES
             </Text>
             <Pressable onPress={() => onOpenComments(p)} style={[styles.commentBtn, { marginLeft: 'auto' }]}>
-              <Ionicons name="chatbubble-outline" size={11} color={RETRO_COLORS.neonCyan} />
-              <Text style={[styles.commentCount, { fontSize: 9 }]}>{p.commentCount}</Text>
+              <Ionicons name="chatbubble-outline" size={11} color={RETRO_COLORS.neonPink} />
+              <Text style={[styles.commentCount, { fontSize: 9, color: RETRO_COLORS.neonPink }]}>{p.commentCount}</Text>
             </Pressable>
             {p.myVote && (
               <View style={[styles.voteDot, { backgroundColor: p.myVote === 'keep' ? RETRO_COLORS.neonCyan : RETRO_COLORS.neonMagenta }]} />
@@ -262,6 +261,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...RETRO_BORDERS.magentaThick,
     ...RETRO_GLOW.magenta,
+  },
+  cardCompact: {
+    marginBottom: 8,
   },
   cardEliminated: {
     opacity: 0.45,
