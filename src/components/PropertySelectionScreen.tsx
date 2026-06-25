@@ -28,7 +28,6 @@ import { GroupVotingStatus, RankedProperty } from '../services/propertyService';
 import { RETRO_THEME_ENABLED, RETRO_COLORS, RETRO_GLOW, RETRO_FONT, RETRO_SIZE } from '../theme/retro';
 import { SynthwaveBackground } from './retro/SynthwaveBackground';
 import { NeonPropertyCard } from './retro/NeonPropertyCard';
-import { formatMockupCountdown } from '../utils/countdown';
 
 /**
  * PropertySelectionScreen = the core "game view" for collaborative property voting in a travel cycle.
@@ -61,6 +60,12 @@ export default function PropertySelectionScreen() {
 
   // Already in HH:MM:SS format for the reference banner style (e.g. 05:37:42)
   const displayCountdown = timeLeft;
+
+  // Parse countdown parts for the multi-line mockup time display (18H 42M / 17s)
+  const cdParts = displayCountdown.split(':');
+  const cdH = parseInt(cdParts[0] || '0', 10);
+  const cdM = parseInt(cdParts[1] || '0', 10);
+  const cdS = parseInt(cdParts[2] || '0', 10);
 
   // --- New state for results/elimination, comments modal, vote budget, animations ---
   const [viewMode, setViewMode] = useState<'vote' | 'results'>('vote');
@@ -392,8 +397,6 @@ export default function PropertySelectionScreen() {
 
   // ─── RETRO THEME RENDER ────────────────────────────────────────────────────
   if (RETRO_THEME_ENABLED) {
-    const allCities = ['Coastal Demo', 'Chicago', 'New York', 'Atlanta'];
-
     return (
       <SynthwaveBackground sunUpperLeft>
         <View style={{ flex: 1 }}>
@@ -425,19 +428,33 @@ export default function PropertySelectionScreen() {
               <Ionicons name="menu" size={20} color={RETRO_COLORS.neonCyan} />
             </Pressable>
 
-            {/* Lumina — italic glowing script-style logo */}
-            <Text style={{
-              fontSize: 30,
-              fontWeight: '900',
-              fontStyle: 'italic',
-              color: RETRO_COLORS.neonPink,
-              letterSpacing: 4,
-              textShadowColor: RETRO_COLORS.neonPink,
-              textShadowOffset: { width: 0, height: 0 },
-              textShadowRadius: 14,
-            }}>
-              Lumina
-            </Text>
+            {/* Lumina — italic glowing script-style logo with gold pixel star */}
+            <View style={{ alignItems: 'center' }}>
+              {/* Gold pixel star floated above the logo */}
+              <Text style={{
+                position: 'absolute',
+                top: -10,
+                right: -6,
+                fontSize: 18,
+                color: RETRO_COLORS.neonYellow,
+                textShadowColor: RETRO_COLORS.neonYellow,
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 10,
+                zIndex: 1,
+              }}>✦</Text>
+              <Text style={{
+                fontSize: 30,
+                fontWeight: '900',
+                fontStyle: 'italic',
+                color: RETRO_COLORS.neonPink,
+                letterSpacing: 4,
+                textShadowColor: RETRO_COLORS.neonPink,
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 14,
+              }}>
+                Lumina
+              </Text>
+            </View>
 
             {/* Bell in cyan neon rounded-square */}
             <Pressable
@@ -456,65 +473,71 @@ export default function PropertySelectionScreen() {
             </Pressable>
           </View>
 
-          {/* ── TITLE PANEL ── neon-bordered rounded rect */}
+          {/* ── TITLE PANEL ── property photo embedded left, time right */}
           <View style={{
             marginHorizontal: 12,
             marginTop: 10,
-            borderWidth: 2,
-            borderColor: RETRO_COLORS.neonYellow,
+            borderWidth: 2.5,
+            borderColor: RETRO_COLORS.neonMagenta,
             borderRadius: RETRO_SIZE.cardBorderRadius,
-            backgroundColor: 'rgba(10,0,32,0.82)',
-            paddingHorizontal: 14,
-            paddingVertical: 10,
+            overflow: 'hidden',
             flexDirection: 'row',
-            alignItems: 'center',
-            ...RETRO_GLOW.orange,
+            alignItems: 'stretch',
+            ...RETRO_GLOW.magenta,
           }}>
-            {/* Left: title + subtitle */}
-            <View style={{ flex: 1, marginRight: 10 }}>
-              <Text style={{
-                color: RETRO_COLORS.neonYellow,
-                fontSize: 11,
-                fontWeight: '900',
-                letterSpacing: 1.5,
-                textShadowColor: RETRO_COLORS.neonYellow,
-                textShadowOffset: { width: 0, height: 0 },
-                textShadowRadius: 8,
-              }}>
-                PROPERTY SELECTION — DAY {round?.currentDay || 2} OF {round?.totalDays || 3}
-              </Text>
-              <Text style={{ color: RETRO_COLORS.neonCyan, fontSize: 10, marginTop: 3, letterSpacing: 0.5 }}>
-                Help the group pick our perfect stay!
-              </Text>
-              {/* Live group vote progress */}
-              {groupVotingStatus && (
-                <View style={{ marginTop: 5, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <View style={{ flex: 1, height: 2, backgroundColor: 'rgba(255,0,255,0.2)', borderRadius: 1, overflow: 'hidden' }}>
-                    <View style={{ height: '100%', width: `${(groupVotingStatus.votedCount / groupVotingStatus.totalMembers) * 100}%`, backgroundColor: RETRO_COLORS.neonMagenta }} />
-                  </View>
-                  <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 8, letterSpacing: 0.5 }}>{groupVotingStatus.votedCount}/{groupVotingStatus.totalMembers} VOTED</Text>
-                </View>
+            {/* Left: dark background + property photo at bottom + text overlay */}
+            <View style={{ flex: 1, minHeight: 120, backgroundColor: 'rgba(10,0,32,0.92)', position: 'relative' }}>
+              {/* Property photo fills the bottom portion */}
+              {!!properties[0]?.imageUrl && (
+                <Image
+                  source={{ uri: properties[0].imageUrl }}
+                  style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 78 }}
+                  resizeMode="cover"
+                />
               )}
+              {/* Dark gradient over photo so text stays readable */}
+              <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 78, backgroundColor: 'rgba(10,0,32,0.42)' }} />
+              {/* Text content */}
+              <View style={{ paddingHorizontal: 14, paddingTop: 10, paddingBottom: 10 }}>
+                <Text style={{
+                  color: RETRO_COLORS.neonYellow,
+                  fontSize: 12,
+                  fontWeight: '900',
+                  letterSpacing: 1.5,
+                  textShadowColor: RETRO_COLORS.neonYellow,
+                  textShadowOffset: { width: 0, height: 0 },
+                  textShadowRadius: 8,
+                }}>
+                  PROPERTY SELECTION
+                </Text>
+                <Text style={{ color: RETRO_COLORS.neonCyan, fontSize: 11, marginTop: 2, letterSpacing: 1, fontWeight: '800' }}>
+                  — DAY {round?.currentDay || 2} OF {round?.totalDays || 3}
+                </Text>
+                <Text style={{ color: RETRO_COLORS.textSecondary, fontSize: 10, marginTop: 4, letterSpacing: 0.5 }}>
+                  Help the group pick our perfect stay!
+                </Text>
+              </View>
             </View>
 
-            {/* Right: TIME REMAINING mini-box */}
+            {/* Right: TIME REMAINING — multi-line (H M large / s small) */}
             <View style={{
-              borderWidth: 1.5,
-              borderColor: RETRO_COLORS.neonCyan,
-              borderRadius: 8,
-              backgroundColor: 'rgba(0,255,255,0.06)',
-              paddingHorizontal: 10,
-              paddingVertical: 6,
+              borderLeftWidth: 1.5,
+              borderLeftColor: RETRO_COLORS.neonMagenta,
+              backgroundColor: 'rgba(0,0,0,0.35)',
+              paddingHorizontal: 11,
+              paddingVertical: 10,
               alignItems: 'center',
-              minWidth: 88,
+              justifyContent: 'center',
+              minWidth: 100,
               ...RETRO_GLOW.cyan,
             }}>
-              <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 7, fontWeight: '700', letterSpacing: 1.5, marginBottom: 2 }}>
+              <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 7, fontWeight: '700', letterSpacing: 1.5, marginBottom: 4 }}>
                 TIME REMAINING
               </Text>
+              {/* Hours + Minutes — large */}
               <Text style={{
                 color: RETRO_COLORS.neonCyan,
-                fontSize: 14,
+                fontSize: 18,
                 fontWeight: '900',
                 letterSpacing: 1,
                 fontVariant: ['tabular-nums'] as any,
@@ -522,102 +545,43 @@ export default function PropertySelectionScreen() {
                 textShadowOffset: { width: 0, height: 0 },
                 textShadowRadius: 6,
               }}>
-                {formatMockupCountdown(displayCountdown)}
+                {`${cdH}H ${cdM}M`}
+              </Text>
+              {/* Seconds — smaller, right-aligned */}
+              <Text style={{
+                color: RETRO_COLORS.neonCyan,
+                fontSize: 13,
+                fontWeight: '700',
+                letterSpacing: 1,
+                alignSelf: 'flex-end',
+                fontVariant: ['tabular-nums'] as any,
+                textShadowColor: RETRO_COLORS.neonCyan,
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 4,
+              }}>
+                {`${cdS}s`}
               </Text>
             </View>
           </View>
 
           {/* ── SCROLLABLE CONTENT ── */}
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 90 }}>
-
-            {/* Conduct gate */}
-            {!conductAccepted && (
-              <View style={{ marginHorizontal: 12, marginTop: 10, backgroundColor: 'rgba(255,165,0,0.1)', borderWidth: 1.5, borderColor: '#FFA500', borderRadius: 10, padding: 12 }}>
-                <Text style={{ color: '#FFA500', fontWeight: '700', letterSpacing: 1 }}>CODE OF CONDUCT REQUIRED</Text>
-                <Text style={{ color: RETRO_COLORS.textSecondary, fontSize: 11, marginTop: 4 }}>Review and accept our Code of Conduct to participate in group voting.</Text>
-                <Pressable onPress={handleAcceptConduct} style={{ marginTop: 8, backgroundColor: '#FFA500', paddingVertical: 8, borderRadius: 6, alignItems: 'center' }}>
-                  <Text style={{ color: '#000', fontWeight: '700' }}>ACCEPT &amp; CONTINUE ✓</Text>
-                </Pressable>
-              </View>
-            )}
-
-            {/* City selector — horizontal neon chips */}
-            <View style={{ marginTop: 10, paddingHorizontal: 12 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 8, letterSpacing: 2 }}>DESTINATION</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 8 }}>BUDGET: ${groupBudget}/pp</Text>
-                  <Pressable onPress={() => setGroupBudget(b => Math.max(50, b - 10))} style={{ paddingHorizontal: 5, paddingVertical: 1, borderRadius: 3, borderWidth: 1, borderColor: RETRO_COLORS.neonPurple }}>
-                    <Text style={{ color: RETRO_COLORS.neonPurple, fontWeight: '700', fontSize: 9 }}>−</Text>
-                  </Pressable>
-                  <Pressable onPress={() => setGroupBudget(b => b + 10)} style={{ paddingHorizontal: 5, paddingVertical: 1, borderRadius: 3, borderWidth: 1, borderColor: RETRO_COLORS.neonPurple }}>
-                    <Text style={{ color: RETRO_COLORS.neonPurple, fontWeight: '700', fontSize: 9 }}>+</Text>
-                  </Pressable>
-                </View>
-              </View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row' }}>
-                <View style={{ flexDirection: 'row', gap: 8, paddingRight: 4 }}>
-                  {allCities.map((city) => (
-                    <Pressable
-                      key={city}
-                      onPress={async () => {
-                        await propertyService.setCurrentCity(city);
-                        setCurrentCity(city);
-                        const p = await propertyService.getProperties();
-                        setProperties(p);
-                        setViewMode('vote');
-                        setEliminatedIds(new Set());
-                        setResultsSummary(null);
-                      }}
-                      style={{
-                        paddingHorizontal: 12,
-                        paddingVertical: 6,
-                        borderRadius: 20,
-                        borderWidth: 1.5,
-                        borderColor: currentCity === city ? RETRO_COLORS.neonCyan : RETRO_COLORS.neonPurple,
-                        backgroundColor: currentCity === city ? 'rgba(0,255,255,0.14)' : 'rgba(155,48,255,0.06)',
-                        ...(currentCity === city ? RETRO_GLOW.cyan : {}),
-                      }}
-                    >
-                      <Text style={{
-                        fontWeight: '700',
-                        fontSize: 10,
-                        letterSpacing: 0.5,
-                        color: currentCity === city ? RETRO_COLORS.neonCyan : RETRO_COLORS.textSecondary,
-                      }}>
-                        {city === 'Coastal Demo' ? 'DEMO' : city.toUpperCase()}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </ScrollView>
-            </View>
-
-            {/* Avatars + group info */}
-            <View style={{ paddingHorizontal: 12, marginTop: 8, flexDirection: 'row', alignItems: 'center' }}>
-              {displayedAvatars.map((m, i) => (
-                <Image
-                  key={i}
-                  source={{ uri: m.avatarUrl }}
-                  style={{ width: 26, height: 26, borderRadius: 13, borderWidth: 1.5, borderColor: RETRO_COLORS.neonCyan, marginLeft: i === 0 ? 0 : -7, zIndex: 10 - i }}
-                />
-              ))}
-              <View style={{ marginLeft: 6, backgroundColor: 'rgba(0,255,255,0.12)', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 10, borderWidth: 1, borderColor: RETRO_COLORS.neonCyan }}>
-                <Text style={{ color: RETRO_COLORS.neonCyan, fontSize: 8, fontWeight: '700' }}>+{extraCount}</Text>
-              </View>
-              <Text style={{ marginLeft: 8, color: RETRO_COLORS.textMuted, fontSize: 9, letterSpacing: 0.3 }}>CHOOSING TOGETHER · {userVoteCount}/2 VOTES</Text>
-              <Pressable
-                onPress={() => Alert.alert('How voting works', 'Each member gets exactly 2 votes per round.\n\n• Tap KEEP or ELIMINATE on up to 2 properties.\n• Tap the same button again to change your vote.\n• Tap any property card to open discussion.\n• "VIEW RESULTS" shows the group standings.\n• After results, "OPEN TRIP ROOM" locks in the winner.', [{ text: 'Got it' }])}
-                style={{ marginLeft: 4 }}
-              >
-                <Ionicons name="information-circle-outline" size={12} color={RETRO_COLORS.neonPurple} />
-              </Pressable>
+            {/* Compact votes/group status pill row */}
+            <View style={{ marginTop: 8, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 9, letterSpacing: 1 }}>
+                {currentCity.toUpperCase()} · {userVoteCount}/2 VOTES USED
+              </Text>
+              {!!groupVotingStatus && (
+                <Text style={{ color: RETRO_COLORS.neonCyan, fontSize: 9, letterSpacing: 0.8 }}>
+                  · {groupVotingStatus.votedCount}/{groupVotingStatus.totalMembers} VOTED
+                </Text>
+              )}
             </View>
 
             {/* ── TWO-COLUMN PROPERTY GRID ── */}
-            <Animated.View style={[{ paddingHorizontal: 10, paddingTop: 10, flexDirection: 'row', flexWrap: 'wrap', gap: 10 }, gridAnimStyle]}>
+            <Animated.View style={[{ paddingHorizontal: 10, paddingTop: 10, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }, gridAnimStyle]}>
               {properties.map((p) => (
-                <View key={p.id} style={{ width: '47.5%' }}>
+                <View key={p.id} style={{ flexBasis: '49%', maxWidth: '49%' }}>
                   <NeonPropertyCard
                     property={p}
                     isEliminated={eliminatedIds.has(p.id)}
@@ -634,44 +598,6 @@ export default function PropertySelectionScreen() {
                 </View>
               ))}
             </Animated.View>
-
-            {/* Bottom action buttons */}
-            <View style={{ paddingHorizontal: 12, paddingTop: 4, paddingBottom: 8 }}>
-              {viewMode === 'vote' ? (
-                <View style={{ flexDirection: 'row', gap: 10 }}>
-                  <Pressable
-                    onPress={computeResults}
-                    style={{ flex: 1, backgroundColor: 'rgba(255,0,255,0.12)', paddingVertical: 12, borderRadius: 8, alignItems: 'center', borderWidth: 2, borderColor: RETRO_COLORS.neonMagenta, ...RETRO_GLOW.magenta }}
-                  >
-                    <Text style={{ color: RETRO_COLORS.neonMagenta, fontWeight: '900', letterSpacing: 2, fontSize: 11 }}>VIEW RESULTS</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={handleAdvanceRound}
-                    style={{ paddingHorizontal: 14, paddingVertical: 12, borderRadius: 8, alignItems: 'center', borderWidth: 2, borderColor: RETRO_COLORS.neonPurple, backgroundColor: 'rgba(155,48,255,0.1)' }}
-                  >
-                    <Text style={{ color: RETRO_COLORS.neonPurple, fontSize: 9, fontWeight: '700', letterSpacing: 1 }}>NEXT DAY</Text>
-                  </Pressable>
-                </View>
-              ) : (
-                <View>
-                  <Pressable
-                    onPress={() => { setViewMode('vote'); setEliminatedIds(new Set()); setResultsSummary(null); }}
-                    style={{ backgroundColor: 'rgba(0,255,255,0.12)', paddingVertical: 12, borderRadius: 8, alignItems: 'center', borderWidth: 2, borderColor: RETRO_COLORS.neonCyan, ...RETRO_GLOW.cyan }}
-                  >
-                    <Text style={{ color: RETRO_COLORS.neonCyan, fontWeight: '900', letterSpacing: 2, fontSize: 11 }}>BACK TO VOTING</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={openTripRoom}
-                    style={{ marginTop: 8, backgroundColor: 'rgba(255,107,53,0.2)', paddingVertical: 12, borderRadius: 8, alignItems: 'center', borderWidth: 2, borderColor: RETRO_COLORS.neonOrange, ...RETRO_GLOW.orange }}
-                  >
-                    <Text style={{ color: RETRO_COLORS.neonOrange, fontWeight: '900', letterSpacing: 2, fontSize: 11 }}>OPEN TRIP ROOM 🏠</Text>
-                  </Pressable>
-                </View>
-              )}
-              {resultsSummary && (
-                <Text style={{ marginTop: 8, textAlign: 'center', color: RETRO_COLORS.textMuted, fontSize: 9, letterSpacing: 0.5 }}>{resultsSummary}</Text>
-              )}
-            </View>
           </ScrollView>
 
           {/* ── BOTTOM NEON NAV BAR (visual mockup style — labels mirror mockup, real nav unchanged) ── */}
@@ -686,22 +612,34 @@ export default function PropertySelectionScreen() {
             {([
               { label: 'Properties', icon: 'home', active: true },
               { label: 'Group', icon: 'people-outline', active: false },
-              { label: 'Votes', icon: 'stats-chart-outline', active: false },
+              { label: 'Votes', icon: 'checkmark-done-outline', active: false },
               { label: 'Profile', icon: 'person-outline', active: false },
             ] as const).map((item) => (
-              <Pressable key={item.label} style={{ flex: 1, alignItems: 'center', paddingVertical: 4 }}>
+              <Pressable
+                key={item.label}
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  paddingVertical: 4,
+                  marginHorizontal: 6,
+                  borderRadius: 8,
+                  borderWidth: item.active ? 1.5 : 0,
+                  borderColor: item.active ? RETRO_COLORS.neonYellow : 'transparent',
+                  backgroundColor: item.active ? 'rgba(255,230,0,0.22)' : 'transparent',
+                }}
+              >
                 <Ionicons
                   name={item.icon as any}
                   size={22}
-                  color={item.active ? RETRO_COLORS.neonMagenta : RETRO_COLORS.textMuted}
+                  color={item.active ? RETRO_COLORS.neonYellow : RETRO_COLORS.textMuted}
                 />
                 <Text style={{
-                  color: item.active ? RETRO_COLORS.neonMagenta : RETRO_COLORS.textMuted,
+                  color: item.active ? RETRO_COLORS.neonYellow : RETRO_COLORS.textMuted,
                   fontSize: 9,
                   fontWeight: '700',
                   letterSpacing: 0.5,
                   marginTop: 2,
-                  textShadowColor: item.active ? RETRO_COLORS.neonMagenta : 'transparent',
+                  textShadowColor: item.active ? RETRO_COLORS.neonYellow : 'transparent',
                   textShadowOffset: { width: 0, height: 0 },
                   textShadowRadius: item.active ? 6 : 0,
                 }}>
