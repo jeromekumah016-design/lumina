@@ -28,7 +28,7 @@ import { GroupVotingStatus, RankedProperty } from '../services/propertyService';
 import { RETRO_THEME_ENABLED, RETRO_COLORS, RETRO_GLOW, RETRO_FONT, RETRO_SIZE } from '../theme/retro';
 import { SynthwaveBackground } from './retro/SynthwaveBackground';
 import { NeonPropertyCard } from './retro/NeonPropertyCard';
-import { formatMockupCountdown } from '../utils/countdown';
+import { formatMockupCountdown as _formatMockupCountdown } from '../utils/countdown';
 
 /**
  * PropertySelectionScreen = the core "game view" for collaborative property voting in a travel cycle.
@@ -61,6 +61,12 @@ export default function PropertySelectionScreen() {
 
   // Already in HH:MM:SS format for the reference banner style (e.g. 05:37:42)
   const displayCountdown = timeLeft;
+
+  // Parse countdown parts for the multi-line mockup time display (18H 42M / 17s)
+  const _cdParts = displayCountdown.split(':');
+  const cdH = parseInt(_cdParts[0] || '0', 10);
+  const cdM = parseInt(_cdParts[1] || '0', 10);
+  const cdS = parseInt(_cdParts[2] || '0', 10);
 
   // --- New state for results/elimination, comments modal, vote budget, animations ---
   const [viewMode, setViewMode] = useState<'vote' | 'results'>('vote');
@@ -423,19 +429,33 @@ export default function PropertySelectionScreen() {
               <Ionicons name="menu" size={20} color={RETRO_COLORS.neonCyan} />
             </Pressable>
 
-            {/* Lumina — italic glowing script-style logo */}
-            <Text style={{
-              fontSize: 30,
-              fontWeight: '900',
-              fontStyle: 'italic',
-              color: RETRO_COLORS.neonPink,
-              letterSpacing: 4,
-              textShadowColor: RETRO_COLORS.neonPink,
-              textShadowOffset: { width: 0, height: 0 },
-              textShadowRadius: 14,
-            }}>
-              Lumina
-            </Text>
+            {/* Lumina — italic glowing script-style logo with gold pixel star */}
+            <View style={{ alignItems: 'center' }}>
+              {/* Gold pixel star floated above the logo */}
+              <Text style={{
+                position: 'absolute',
+                top: -10,
+                right: -6,
+                fontSize: 18,
+                color: RETRO_COLORS.neonYellow,
+                textShadowColor: RETRO_COLORS.neonYellow,
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 10,
+                zIndex: 1,
+              }}>✦</Text>
+              <Text style={{
+                fontSize: 30,
+                fontWeight: '900',
+                fontStyle: 'italic',
+                color: RETRO_COLORS.neonPink,
+                letterSpacing: 4,
+                textShadowColor: RETRO_COLORS.neonPink,
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 14,
+              }}>
+                Lumina
+              </Text>
+            </View>
 
             {/* Bell in cyan neon rounded-square */}
             <Pressable
@@ -454,60 +474,71 @@ export default function PropertySelectionScreen() {
             </Pressable>
           </View>
 
-          {/* ── TITLE PANEL ── neon-bordered rounded rect */}
+          {/* ── TITLE PANEL ── property photo embedded left, time right */}
           <View style={{
             marginHorizontal: 12,
             marginTop: 10,
             borderWidth: 2.5,
             borderColor: RETRO_COLORS.neonMagenta,
             borderRadius: RETRO_SIZE.cardBorderRadius,
-            backgroundColor: 'rgba(10,0,32,0.82)',
-            paddingHorizontal: 14,
-            paddingVertical: 10,
+            overflow: 'hidden',
             flexDirection: 'row',
-            alignItems: 'center',
+            alignItems: 'stretch',
             ...RETRO_GLOW.magenta,
           }}>
-            {/* Left: title + subtitle */}
-            <View style={{ flex: 1, marginRight: 10 }}>
-              <Text style={{
-                color: RETRO_COLORS.neonYellow,
-                fontSize: 12,
-                fontWeight: '900',
-                letterSpacing: 1.5,
-                textShadowColor: RETRO_COLORS.neonYellow,
-                textShadowOffset: { width: 0, height: 0 },
-                textShadowRadius: 8,
-              }}>
-                PROPERTY SELECTION
-              </Text>
-              <Text style={{ color: RETRO_COLORS.neonCyan, fontSize: 11, marginTop: 2, letterSpacing: 1, fontWeight: '800' }}>
-                — DAY {round?.currentDay || 2} OF {round?.totalDays || 3}
-              </Text>
-              <Text style={{ color: RETRO_COLORS.textSecondary, fontSize: 10, marginTop: 4, letterSpacing: 0.5 }}>
-                Help the group pick our perfect stay!
-              </Text>
-              <View style={{ marginTop: 6, width: 32, height: 2, backgroundColor: RETRO_COLORS.neonCyan }} />
+            {/* Left: dark background + property photo at bottom + text overlay */}
+            <View style={{ flex: 1, minHeight: 120, backgroundColor: 'rgba(10,0,32,0.92)', position: 'relative' }}>
+              {/* Property photo fills the bottom portion */}
+              {!!properties[0]?.imageUrl && (
+                <Image
+                  source={{ uri: properties[0].imageUrl }}
+                  style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 78 }}
+                  resizeMode="cover"
+                />
+              )}
+              {/* Dark gradient over photo so text stays readable */}
+              <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 78, backgroundColor: 'rgba(10,0,32,0.42)' }} />
+              {/* Text content */}
+              <View style={{ paddingHorizontal: 14, paddingTop: 10, paddingBottom: 10 }}>
+                <Text style={{
+                  color: RETRO_COLORS.neonYellow,
+                  fontSize: 12,
+                  fontWeight: '900',
+                  letterSpacing: 1.5,
+                  textShadowColor: RETRO_COLORS.neonYellow,
+                  textShadowOffset: { width: 0, height: 0 },
+                  textShadowRadius: 8,
+                }}>
+                  PROPERTY SELECTION
+                </Text>
+                <Text style={{ color: RETRO_COLORS.neonCyan, fontSize: 11, marginTop: 2, letterSpacing: 1, fontWeight: '800' }}>
+                  — DAY {round?.currentDay || 2} OF {round?.totalDays || 3}
+                </Text>
+                <Text style={{ color: RETRO_COLORS.textSecondary, fontSize: 10, marginTop: 4, letterSpacing: 0.5 }}>
+                  Help the group pick our perfect stay!
+                </Text>
+              </View>
             </View>
 
-            {/* Right: TIME REMAINING mini-box */}
+            {/* Right: TIME REMAINING — multi-line (H M large / s small) */}
             <View style={{
-              borderWidth: 1.5,
-              borderColor: RETRO_COLORS.neonCyan,
-              borderRadius: 8,
-              backgroundColor: 'rgba(0,255,255,0.06)',
-              paddingHorizontal: 10,
-              paddingVertical: 6,
+              borderLeftWidth: 1.5,
+              borderLeftColor: RETRO_COLORS.neonMagenta,
+              backgroundColor: 'rgba(0,0,0,0.35)',
+              paddingHorizontal: 11,
+              paddingVertical: 10,
               alignItems: 'center',
-              minWidth: 88,
+              justifyContent: 'center',
+              minWidth: 100,
               ...RETRO_GLOW.cyan,
             }}>
-              <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 7, fontWeight: '700', letterSpacing: 1.5, marginBottom: 2 }}>
+              <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 7, fontWeight: '700', letterSpacing: 1.5, marginBottom: 4 }}>
                 TIME REMAINING
               </Text>
+              {/* Hours + Minutes — large */}
               <Text style={{
                 color: RETRO_COLORS.neonCyan,
-                fontSize: 14,
+                fontSize: 18,
                 fontWeight: '900',
                 letterSpacing: 1,
                 fontVariant: ['tabular-nums'] as any,
@@ -515,29 +546,37 @@ export default function PropertySelectionScreen() {
                 textShadowOffset: { width: 0, height: 0 },
                 textShadowRadius: 6,
               }}>
-                {formatMockupCountdown(displayCountdown)}
+                {`${cdH}H ${cdM}M`}
+              </Text>
+              {/* Seconds — smaller, right-aligned */}
+              <Text style={{
+                color: RETRO_COLORS.neonCyan,
+                fontSize: 13,
+                fontWeight: '700',
+                letterSpacing: 1,
+                alignSelf: 'flex-end',
+                fontVariant: ['tabular-nums'] as any,
+                textShadowColor: RETRO_COLORS.neonCyan,
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 4,
+              }}>
+                {`${cdS}s`}
               </Text>
             </View>
           </View>
 
           {/* ── SCROLLABLE CONTENT ── */}
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 90 }}>
-            <View style={{ marginTop: 10, paddingHorizontal: 12, flexDirection: 'row', gap: 10 }}>
-              {!!properties[0]?.imageUrl && (
-                <View style={{ width: 104, height: 56, borderWidth: 1.5, borderColor: RETRO_COLORS.neonMagenta, borderRadius: 8, overflow: 'hidden' }}>
-                  <Image source={{ uri: properties[0].imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-                </View>
-              )}
-              <View style={{ justifyContent: 'center' }}>
-                <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 9, letterSpacing: 1 }}>
-                  {currentCity.toUpperCase()} · {userVoteCount}/2 VOTES USED
+            {/* Compact votes/group status pill row */}
+            <View style={{ marginTop: 8, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 9, letterSpacing: 1 }}>
+                {currentCity.toUpperCase()} · {userVoteCount}/2 VOTES USED
+              </Text>
+              {!!groupVotingStatus && (
+                <Text style={{ color: RETRO_COLORS.neonCyan, fontSize: 9, letterSpacing: 0.8 }}>
+                  · {groupVotingStatus.votedCount}/{groupVotingStatus.totalMembers} VOTED
                 </Text>
-                {!!groupVotingStatus && (
-                  <Text style={{ color: RETRO_COLORS.neonCyan, fontSize: 9, marginTop: 2, letterSpacing: 0.8 }}>
-                    {groupVotingStatus.votedCount}/{groupVotingStatus.totalMembers} GROUP MEMBERS VOTED
-                  </Text>
-                )}
-              </View>
+              )}
             </View>
 
             {/* ── TWO-COLUMN PROPERTY GRID ── */}
