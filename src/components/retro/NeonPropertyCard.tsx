@@ -259,8 +259,9 @@ const styles = StyleSheet.create({
     borderRadius: RETRO_SIZE.cardBorderRadius,
     backgroundColor: RETRO_COLORS.cardBg,
     overflow: 'hidden',
-    ...RETRO_BORDERS.magentaThick,
-    ...RETRO_GLOW.magenta,
+    borderWidth: 2.5,
+    borderColor: RETRO_COLORS.neonMagenta,
+    ...RETRO_GLOW.pink,
   },
   cardCompact: {
     marginBottom: 8,
@@ -270,9 +271,10 @@ const styles = StyleSheet.create({
   },
   glowBorder: {
     borderRadius: RETRO_SIZE.cardBorderRadius,
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: RETRO_COLORS.neonCyan,
     zIndex: 5,
+    ...RETRO_GLOW.cyan,
   },
 
   // Image
@@ -292,24 +294,27 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
 
-  // Price badge
+  // Price badge — lit neon sign style
   priceBadge: {
     position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: 'rgba(10,0,32,0.88)',
-    borderWidth: 1.5,
+    top: 8,
+    left: 8,
+    backgroundColor: 'rgba(4,0,15,0.92)',
+    borderWidth: 2,
     borderColor: RETRO_COLORS.neonYellow,
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: RETRO_SIZE.badgeBorderRadius,
-    ...RETRO_GLOW.orange,
+    ...RETRO_GLOW.yellow,
   },
   priceBadgeText: {
     color: RETRO_COLORS.neonYellow,
-    fontWeight: '800',
-    fontSize: RETRO_FONT.labelSize,
+    fontWeight: '900',
+    fontSize: RETRO_FONT.labelSize + 1,
     letterSpacing: 0.5,
+    textShadowColor: RETRO_COLORS.neonYellow,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 6,
   },
   priceBadgeSub: {
     fontSize: 9,
@@ -320,13 +325,14 @@ const styles = StyleSheet.create({
   // Heart
   heartButton: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(10,0,32,0.88)',
-    borderWidth: 1.5,
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(4,0,15,0.92)',
+    borderWidth: 2,
     borderColor: RETRO_COLORS.neonPink,
     padding: 6,
     borderRadius: 999,
+    ...RETRO_GLOW.pink,
   },
 
   // Eliminated overlay

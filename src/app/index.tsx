@@ -87,12 +87,30 @@ export default function Feed() {
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 100 }}
       >
-        {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-          <NeonHeader title="LUMINA" />
-          <Text style={{ color: RETRO_COLORS.neonMagenta, fontSize: 20, marginLeft: 6 }}>✦</Text>
+        {/* Header — neon "LUMINA" wordmark */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+          <Text style={{
+            fontSize: 34,
+            fontWeight: '900',
+            fontStyle: 'italic',
+            color: RETRO_COLORS.neonPink,
+            letterSpacing: 5,
+            textShadowColor: RETRO_COLORS.neonPink,
+            textShadowOffset: { width: 0, height: 0 },
+            textShadowRadius: 16,
+          }}>
+            LUMINA
+          </Text>
+          <Text style={{
+            color: RETRO_COLORS.neonYellow,
+            fontSize: 22,
+            marginLeft: 6,
+            textShadowColor: RETRO_COLORS.neonYellow,
+            textShadowOffset: { width: 0, height: 0 },
+            textShadowRadius: 10,
+          }}>✦</Text>
         </View>
-        <Text style={{ color: RETRO_COLORS.textSecondary, fontSize: RETRO_FONT.labelSize, marginBottom: 16 }}>
+        <Text style={{ color: RETRO_COLORS.textSecondary, fontSize: RETRO_FONT.labelSize, marginBottom: 16, letterSpacing: 0.5 }}>
           Curated small-group travel for platonic friendships.
         </Text>
 
@@ -135,17 +153,20 @@ export default function Feed() {
           </NeonPanel>
         )}
 
-        {/* City label */}
+        {/* City section label — neon */}
         <Text style={{
-          color: RETRO_COLORS.textMuted,
-          fontSize: 10,
-          fontWeight: '700',
+          color: RETRO_COLORS.neonCyan,
+          fontSize: 11,
+          fontWeight: '800',
           letterSpacing: 3,
           textTransform: 'uppercase',
           marginBottom: 10,
           marginTop: 4,
+          textShadowColor: RETRO_COLORS.neonCyan,
+          textShadowOffset: { width: 0, height: 0 },
+          textShadowRadius: 6,
         }}>
-          Upcoming City Experiences
+          — UPCOMING CITY EXPERIENCES —
         </Text>
 
         {/* City cards */}
@@ -156,8 +177,16 @@ export default function Feed() {
               style={{ marginBottom: 12, flexDirection: 'row', alignItems: 'center' }}
             >
               <View style={{ flex: 1 }}>
-                <Text style={{ color: RETRO_COLORS.textPrimary, fontWeight: '800', fontSize: 16, letterSpacing: 0.5 }}>
-                  {c.name}
+                <Text style={{
+                  color: i % 2 === 0 ? RETRO_COLORS.neonMagenta : RETRO_COLORS.neonCyan,
+                  fontWeight: '900',
+                  fontSize: 16,
+                  letterSpacing: 1.5,
+                  textShadowColor: i % 2 === 0 ? RETRO_COLORS.neonMagenta : RETRO_COLORS.neonCyan,
+                  textShadowOffset: { width: 0, height: 0 },
+                  textShadowRadius: 8,
+                }}>
+                  {c.name.toUpperCase()}
                 </Text>
                 <Text style={{ color: RETRO_COLORS.textSecondary, fontSize: 12, marginTop: 2 }}>{c.desc}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>

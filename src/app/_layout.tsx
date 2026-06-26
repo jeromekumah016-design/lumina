@@ -55,17 +55,32 @@ export default function TabLayout() {
             title: 'Game',
             tabBarIcon: ({ color, focused }) => (
               <View
-                style={{
-                  backgroundColor: focused ? BLUE : 'transparent',
-                  borderRadius: 20,
-                  borderWidth: focused ? 2 : 0,
-                  borderColor: '#000',
-                  padding: 4,
-                }}>
+                style={
+                  RETRO_THEME_ENABLED
+                    ? {
+                        backgroundColor: focused ? 'rgba(255,0,255,0.18)' : 'transparent',
+                        borderRadius: 20,
+                        borderWidth: focused ? 2 : 0,
+                        borderColor: RETRO_COLORS.neonMagenta,
+                        padding: 4,
+                        shadowColor: RETRO_COLORS.neonMagenta,
+                        shadowOffset: { width: 0, height: 0 },
+                        shadowOpacity: focused ? 1 : 0,
+                        shadowRadius: 12,
+                        elevation: focused ? 12 : 0,
+                      }
+                    : {
+                        backgroundColor: focused ? BLUE : 'transparent',
+                        borderRadius: 20,
+                        borderWidth: focused ? 2 : 0,
+                        borderColor: '#000',
+                        padding: 4,
+                      }
+                }>
                 <Ionicons
                   name="game-controller"
                   size={22}
-                  color={focused ? '#fff' : color}
+                  color={RETRO_THEME_ENABLED ? (focused ? RETRO_COLORS.neonMagenta : color) : (focused ? '#fff' : color)}
                 />
               </View>
             ),

@@ -1189,3 +1189,99 @@ describe('userService — completeOnboarding persistence', () => {
     expect(profile1).toEqual(profile2);
   });
 });
+
+// ───────────────────────────────────────────────────────────────────────────
+// Suite 12 — Retro theme token integrity (feature/retro-distinguished)
+// Verifies the new and updated token values are structurally sound so any
+// future token edit shows up as a deliberate test change.
+// ───────────────────────────────────────────────────────────────────────────
+describe('Retro theme token integrity', () => {
+  const {
+    RETRO_COLORS,
+    RETRO_GLOW,
+    RETRO_BORDERS,
+    RETRO_TIMING,
+    RETRO_THEME_ENABLED,
+  } = require('./src/theme/retro');
+
+  it('RETRO_THEME_ENABLED is true', () => {
+    expect(RETRO_THEME_ENABLED).toBe(true);
+  });
+
+  it('RETRO_COLORS has all required palette keys', () => {
+    const required = [
+      'skyTop', 'skyMid', 'skyBottom', 'horizonGlow',
+      'sunTop', 'sunMid', 'sunBottom',
+      'gridFloor', 'gridLine', 'gridLineAlt',
+      'neonMagenta', 'neonCyan', 'neonPink', 'neonPurple', 'neonOrange', 'neonYellow', 'neonGreen',
+      'skylineBuilding', 'skylinePurple', 'windowCyan', 'windowMagenta', 'windowYellow',
+      'palmTrunk', 'palmFrond',
+      'cardBg', 'cardBorder', 'cardBorderAlt',
+      'textPrimary', 'textSecondary', 'textMuted', 'textNeon', 'textCyan',
+      'keepBg', 'keepBorder', 'keepActive', 'keepText',
+      'elimBg', 'elimBorder', 'elimActive', 'elimText',
+      'overlay', 'scanline',
+    ];
+    for (const key of required) {
+      expect(RETRO_COLORS).toHaveProperty(key);
+    }
+  });
+
+  it('RETRO_COLORS.skyTop is deeper navy than before (starts with #04)', () => {
+    expect(RETRO_COLORS.skyTop).toMatch(/^#04/);
+  });
+
+  it('RETRO_COLORS.palmTrunk and palmFrond are distinct purple-tinted values (not pure black)', () => {
+    expect(RETRO_COLORS.palmTrunk).not.toBe('#000000');
+    expect(RETRO_COLORS.palmFrond).not.toBe('#000000');
+    expect(RETRO_COLORS.palmFrond).not.toBe(RETRO_COLORS.palmTrunk);
+  });
+
+  it('RETRO_GLOW has all required presets including new yellow and purple', () => {
+    const required = ['magenta', 'cyan', 'pink', 'orange', 'yellow', 'purple', 'white'];
+    for (const key of required) {
+      expect(RETRO_GLOW).toHaveProperty(key);
+      expect(RETRO_GLOW[key]).toHaveProperty('shadowColor');
+      expect(RETRO_GLOW[key]).toHaveProperty('shadowRadius');
+    }
+  });
+
+  it('RETRO_GLOW.magenta shadowRadius is stronger than v1 (>=18)', () => {
+    expect(RETRO_GLOW.magenta.shadowRadius).toBeGreaterThanOrEqual(18);
+  });
+
+  it('RETRO_GLOW.cyan shadowRadius is stronger than v1 (>=14)', () => {
+    expect(RETRO_GLOW.cyan.shadowRadius).toBeGreaterThanOrEqual(14);
+  });
+
+  it('RETRO_GLOW.pink shadowRadius is the strongest preset (>=20)', () => {
+    expect(RETRO_GLOW.pink.shadowRadius).toBeGreaterThanOrEqual(20);
+  });
+
+  it('RETRO_BORDERS has magenta, cyan, magentaThick, cyanThick, double', () => {
+    expect(RETRO_BORDERS).toHaveProperty('magenta');
+    expect(RETRO_BORDERS).toHaveProperty('cyan');
+    expect(RETRO_BORDERS).toHaveProperty('magentaThick');
+    expect(RETRO_BORDERS).toHaveProperty('cyanThick');
+    expect(RETRO_BORDERS).toHaveProperty('double');
+  });
+
+  it('RETRO_TIMING.gridScroll is faster than 3000ms for a more dynamic animation', () => {
+    expect(RETRO_TIMING.gridScroll).toBeLessThan(3000);
+  });
+
+  it('RETRO_TIMING has starTwinkle, gridScroll, heartPop, scanlineDrift', () => {
+    const required = ['starTwinkle', 'gridScroll', 'heartPop', 'scanlineDrift'];
+    for (const key of required) {
+      expect(RETRO_TIMING).toHaveProperty(key);
+      expect(typeof RETRO_TIMING[key]).toBe('number');
+    }
+  });
+
+  it('neon accent colors are valid hex strings', () => {
+    const hexAccents = ['neonMagenta', 'neonCyan', 'neonPink', 'neonPurple', 'neonOrange', 'neonYellow', 'neonGreen'];
+    for (const key of hexAccents) {
+      expect(RETRO_COLORS[key]).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    }
+  });
+});

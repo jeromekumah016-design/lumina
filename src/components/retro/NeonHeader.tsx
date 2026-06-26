@@ -19,7 +19,7 @@ export function NeonHeader({ title, subtitle, style }: NeonHeaderProps) {
           letterSpacing: RETRO_FONT.letterSpacing,
           textShadowColor: RETRO_COLORS.neonCyan,
           textShadowOffset: { width: 0, height: 0 },
-          textShadowRadius: 8,
+          textShadowRadius: 14,
         }}
       >
         {title}

@@ -11,9 +11,9 @@ export interface NeonCardProps {
 }
 
 const VARIANT_MAP: Record<NeonCardVariant, { border: string; glow: object }> = {
-  magenta: { border: RETRO_COLORS.neonMagenta, glow: RETRO_GLOW.magenta },
+  magenta: { border: RETRO_COLORS.neonMagenta, glow: RETRO_GLOW.pink    },
   cyan:    { border: RETRO_COLORS.neonCyan,    glow: RETRO_GLOW.cyan    },
-  gold:    { border: RETRO_COLORS.neonYellow,  glow: RETRO_GLOW.orange  },
+  gold:    { border: RETRO_COLORS.neonYellow,  glow: RETRO_GLOW.yellow  },
 };
 
 export function NeonCard({ children, variant = 'magenta', style }: NeonCardProps) {
@@ -24,7 +24,7 @@ export function NeonCard({ children, variant = 'magenta', style }: NeonCardProps
         {
           backgroundColor: RETRO_COLORS.cardBg,
           borderRadius: RETRO_SIZE.cardBorderRadius,
-          borderWidth: 2,
+          borderWidth: 2.5,
           borderColor: border,
           padding: RETRO_SIZE.cardPadding,
           ...glow,
