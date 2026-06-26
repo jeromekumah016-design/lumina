@@ -5,7 +5,7 @@
  * Views and the built-in Animated API — no images, no SVG, no gradient library.
  *
  * Layer order (bottom → top):
- *   1. Deep navy sky (dark View layers)
+ *   1. Gradient sky (near-black → deep purple → warm orange/pink at horizon)
  *   2. Twinkling stars (randomly placed dots, opacity Animated loop)
  *   3. Glowing sunset sun (circle with layered glow halos + scanline bands)
  *   4. Neon city skyline silhouette (buildings with lit windows)
@@ -17,6 +17,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Dimensions, Animated } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { RETRO_COLORS, RETRO_TIMING } from '../../theme/retro';
 
 const { width: W, height: H } = Dimensions.get('window');
@@ -427,10 +428,12 @@ export function SynthwaveBackground({
 
   return (
     <View style={styles.root}>
-      {/* Layer 1: Deep navy sky */}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: RETRO_COLORS.skyTop }]} />
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: RETRO_COLORS.skyMid, top: '15%', opacity: 0.7 }]} />
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: RETRO_COLORS.skyBottom, top: '35%', opacity: 0.5 }]} />
+      {/* Layer 1: Gradient sky — near-black space → deep purple → warm orange/pink at horizon */}
+      <LinearGradient
+        colors={['#04000F', '#0A0030', '#200060', '#4A0080', '#900060', '#C83040', '#E06028']}
+        locations={[0, 0.15, 0.30, 0.48, 0.65, 0.82, 1.0]}
+        style={StyleSheet.absoluteFill}
+      />
 
       {/* Horizon glow — vivid magenta strip */}
       <View
