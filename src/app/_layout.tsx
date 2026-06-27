@@ -113,6 +113,11 @@ export default function TabLayout() {
         <Tabs.Screen name="explore" options={{ href: null }} />
         <Tabs.Screen name="cycles" options={{ href: null }} />
         <Tabs.Screen name="cycle-detail" options={{ href: null }} />
+        {/* New-user sign-up / agreement / pledge flow */}
+        <Tabs.Screen name="intro" options={{ href: null }} />
+        <Tabs.Screen name="signup" options={{ href: null }} />
+        <Tabs.Screen name="user-agreement" options={{ href: null }} />
+        <Tabs.Screen name="conduct-pledge" options={{ href: null }} />
       </Tabs>
     </LuminaProvider>
   );

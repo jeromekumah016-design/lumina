@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 // FIX #2: static import - no more dynamic import() inside a callback
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { userService, UserProfile, MembershipStatus, MatchingStatus, MatchingStatusType } from '../services/userService';
+import { userService, UserProfile, MembershipStatus, MatchingStatus, MatchingStatusType, AccountStub, AgreementRecord, PledgeRecord } from '../services/userService';
 import { propertyService } from '../services/propertyService';
 import { cycleService } from '../services/cycleService';
 
@@ -18,6 +18,10 @@ export interface LuminaState {
   // Alumni cycles: completedCycleIds is the source of truth; hasCompletedCycle is derived.
   completedCycleIds: string[];
   hasCompletedCycle: boolean;
+  // Sign-up / agreement / pledge state
+  accountStub: AccountStub | null;
+  agreementStatus: AgreementRecord | null;
+  pledgeStatus: PledgeRecord | null;
   refresh: () => Promise<void>;
   completeOnboarding: (updates: Partial<UserProfile>) => Promise<void>;
   subscribe: () => Promise<void>;
@@ -25,6 +29,9 @@ export interface LuminaState {
   simulateMatch: () => Promise<{ groupPreview: Array<{ name: string; gender: string }> } | null>;
   leaveQueue: () => Promise<void>;
   completeCycle: (cycleId: string) => Promise<void>;
+  saveAccountStub: (stub: AccountStub) => Promise<void>;
+  acceptAgreement: () => Promise<void>;
+  acceptPledge: (initials: string) => Promise<void>;
   resetAllDemoData: () => Promise<void>;
 }
 
@@ -36,19 +43,26 @@ export function LuminaProvider({ children }: { children: ReactNode }) {
   const [membership, setMembership] = useState<MembershipStatus | null>(null);
   const [matching, setMatching] = useState<MatchingStatus | null>(null);
   const [completedCycleIds, setCompletedCycleIds] = useState<string[]>([]);
+  const [accountStub, setAccountStub] = useState<AccountStub | null>(null);
+  const [agreementStatus, setAgreementStatus] = useState<AgreementRecord | null>(null);
+  const [pledgeStatus, setPledgeStatus] = useState<PledgeRecord | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [ob, prof, mem, mat, cycles] = await Promise.all([
+      const [ob, prof, mem, mat, cycles, acct, ag, pl] = await Promise.all([
         userService.isOnboarded(),
         userService.getProfile(),
         userService.getMembership(),
         userService.getMatchingStatus(),
         userService.getCompletedCycleIds(),
+        userService.getAccountStub(),
+        userService.getAgreementStatus(),
+        userService.getPledgeStatus(),
       ]);
       setOnboarded(ob); setProfile(prof); setMembership(mem); setMatching(mat); setCompletedCycleIds(cycles);
+      setAccountStub(acct); setAgreementStatus(ag); setPledgeStatus(pl);
     } catch (e) {
       console.warn('Failed to refresh Lumina state', e);
     } finally {
@@ -88,6 +102,18 @@ export function LuminaProvider({ children }: { children: ReactNode }) {
     await userService.completeCycle(cycleId); await refresh();
   }, [refresh]);
 
+  const saveAccountStub = useCallback(async (stub: AccountStub) => {
+    await userService.saveAccountStub(stub); await refresh();
+  }, [refresh]);
+
+  const acceptAgreement = useCallback(async () => {
+    await userService.acceptAgreement(); await refresh();
+  }, [refresh]);
+
+  const acceptPledge = useCallback(async (initials: string) => {
+    await userService.acceptPledge(initials); await refresh();
+  }, [refresh]);
+
   // FIX #2: delegate full reset to each service - no dynamic imports, no silent failures.
   const resetAllDemoData = useCallback(async () => {
     try { await userService.resetAllDemoData(); } catch (e) { console.warn('userService.resetAllDemoData failed', e); }
@@ -101,7 +127,9 @@ export function LuminaProvider({ children }: { children: ReactNode }) {
     isFullyReady, isMatched, currentTripCity,
     matchedGroup: matching?.matchedGroup,
     completedCycleIds, hasCompletedCycle,
-    refresh, completeOnboarding, subscribe, joinQueue, simulateMatch, leaveQueue, completeCycle, resetAllDemoData,
+    accountStub, agreementStatus, pledgeStatus,
+    refresh, completeOnboarding, subscribe, joinQueue, simulateMatch, leaveQueue, completeCycle,
+    saveAccountStub, acceptAgreement, acceptPledge, resetAllDemoData,
   };
 
   return <LuminaContext.Provider value={value}>{children}</LuminaContext.Provider>;

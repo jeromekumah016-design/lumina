@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -17,10 +17,18 @@ const CITIES = [
 ];
 
 export default function Feed() {
-  const { onboarded, membership, matching, isLoading } = useLuminaState();
+  const { onboarded, membership, matching, isLoading, accountStub, agreementStatus, pledgeStatus } = useLuminaState();
 
   const member = membership?.hasActiveMembership;
   const matched = matching?.status === 'matched';
+
+  // Gate: route new users through intro → signup → agreement → pledge before the main app.
+  useEffect(() => {
+    if (isLoading) return;
+    if (!accountStub) { router.replace('/intro' as any); return; }
+    if (!agreementStatus?.accepted) { router.replace('/user-agreement' as any); return; }
+    if (!pledgeStatus?.accepted) { router.replace('/conduct-pledge' as any); return; }
+  }, [isLoading, accountStub, agreementStatus, pledgeStatus]);
 
   if (!RETRO_THEME_ENABLED) {
     return (

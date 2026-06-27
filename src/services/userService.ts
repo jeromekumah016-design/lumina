@@ -25,12 +25,38 @@ export interface MatchingStatus {
   matchedGroup?: Array<{ name: string; gender: string }>;
 }
 
+/** Lightweight account stub — no passwords ever stored. */
+export interface AccountStub {
+  name: string;
+  email: string;
+  createdAt: string;
+}
+
+export interface AgreementRecord {
+  accepted: boolean;
+  version: string;
+  acceptedAt: string;
+}
+
+export interface PledgeRecord {
+  accepted: boolean;
+  version: string;
+  acceptedAt: string;
+  initials: string;
+}
+
+export const AGREEMENT_VERSION = '1.0';
+export const PLEDGE_VERSION = '1.0';
+
 const STORAGE_KEYS = {
   PROFILE: 'lumina:user:profile',
   ONBOARDED: 'lumina:user:onboarded',
   MEMBERSHIP: 'lumina:user:membership',
   MATCHING: 'lumina:user:matching',
   COMPLETED_CYCLES: 'lumina:user:completedCycles',
+  ACCOUNT_STUB: 'lumina:user:accountStub',
+  AGREEMENT: 'lumina:user:agreement',
+  PLEDGE: 'lumina:user:pledge',
 } as const;
 
 const DEFAULT_PROFILE: UserProfile = { name: 'Alex Rivera', gender: 'MALE', age: 28, preferredCity: 'Chicago' };
@@ -42,6 +68,9 @@ let cachedOnboarded: boolean | null = null;
 let cachedMembership: MembershipStatus | null = null;
 let cachedMatching: MatchingStatus | null = null;
 let cachedCompletedCycles: string[] | null = null;
+let cachedAccountStub: AccountStub | null | undefined = undefined;
+let cachedAgreement: AgreementRecord | null | undefined = undefined;
+let cachedPledge: PledgeRecord | null | undefined = undefined;
 
 async function load<T>(key: string, fallback: T): Promise<T> {
   try { const raw = await AsyncStorage.getItem(key); if (raw) return JSON.parse(raw) as T; } catch {}
@@ -148,9 +177,35 @@ export const userService = {
     const [onboarded, profile, membership, matching] = await Promise.all([this.isOnboarded(), this.getProfile(), this.getMembership(), this.getMatchingStatus()]);
     return { onboarded, profile, membership, matching };
   },
+  async getAccountStub(): Promise<AccountStub | null> {
+    if (cachedAccountStub !== undefined) return cachedAccountStub;
+    const raw = await load<AccountStub | null>(STORAGE_KEYS.ACCOUNT_STUB, null);
+    cachedAccountStub = raw; return raw;
+  },
+  async saveAccountStub(stub: AccountStub): Promise<AccountStub> {
+    await save(STORAGE_KEYS.ACCOUNT_STUB, stub); cachedAccountStub = stub; return stub;
+  },
+  async getAgreementStatus(): Promise<AgreementRecord | null> {
+    if (cachedAgreement !== undefined) return cachedAgreement;
+    const raw = await load<AgreementRecord | null>(STORAGE_KEYS.AGREEMENT, null);
+    cachedAgreement = raw; return raw;
+  },
+  async acceptAgreement(): Promise<AgreementRecord> {
+    const record: AgreementRecord = { accepted: true, version: AGREEMENT_VERSION, acceptedAt: new Date().toISOString() };
+    await save(STORAGE_KEYS.AGREEMENT, record); cachedAgreement = record; return record;
+  },
+  async getPledgeStatus(): Promise<PledgeRecord | null> {
+    if (cachedPledge !== undefined) return cachedPledge;
+    const raw = await load<PledgeRecord | null>(STORAGE_KEYS.PLEDGE, null);
+    cachedPledge = raw; return raw;
+  },
+  async acceptPledge(initials: string): Promise<PledgeRecord> {
+    const record: PledgeRecord = { accepted: true, version: PLEDGE_VERSION, acceptedAt: new Date().toISOString(), initials };
+    await save(STORAGE_KEYS.PLEDGE, record); cachedPledge = record; return record;
+  },
   async resetAllDemoData(): Promise<void> {
     await AsyncStorage.multiRemove(Object.values(STORAGE_KEYS));
     cachedProfile = null; cachedOnboarded = null; cachedMembership = null; cachedMatching = null;
-    cachedCompletedCycles = null;
+    cachedCompletedCycles = null; cachedAccountStub = undefined; cachedAgreement = undefined; cachedPledge = undefined;
   },
 };

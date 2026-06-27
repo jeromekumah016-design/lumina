@@ -17,7 +17,7 @@ const GROUP = [
 ];
 
 export default function Profile() {
-  const { onboarded, membership, matching, resetAllDemoData, isLoading } = useLuminaState();
+  const { onboarded, membership, matching, resetAllDemoData, isLoading, accountStub, agreementStatus, pledgeStatus } = useLuminaState();
 
   const member = membership?.hasActiveMembership;
   const matchStatus = matching?.status;
@@ -41,6 +41,15 @@ export default function Profile() {
         <View className="mt-5 mb-2">
           <Text className="text-xs uppercase tracking-widest font-bold text-retro-dark mb-1.5">Your Lumina journey</Text>
           <View className="bg-retro-paper border-2 border-black shadow-retro-sm rounded-2xl p-3 flex-row flex-wrap gap-2">
+            <View className={`px-2.5 py-1 rounded-full border border-black ${accountStub ? 'bg-emerald-100' : 'bg-white'}`}>
+              <Text className={`text-[10px] font-bold ${accountStub ? 'text-emerald-800' : 'text-retro-dark'}`}>Account {accountStub ? '✓' : ''}</Text>
+            </View>
+            <View className={`px-2.5 py-1 rounded-full border border-black ${agreementStatus?.accepted ? 'bg-emerald-100' : 'bg-white'}`}>
+              <Text className={`text-[10px] font-bold ${agreementStatus?.accepted ? 'text-emerald-800' : 'text-retro-dark'}`}>Agreement {agreementStatus?.accepted ? '✓' : ''}</Text>
+            </View>
+            <View className={`px-2.5 py-1 rounded-full border border-black ${pledgeStatus?.accepted ? 'bg-emerald-100' : 'bg-white'}`}>
+              <Text className={`text-[10px] font-bold ${pledgeStatus?.accepted ? 'text-emerald-800' : 'text-retro-dark'}`}>Pledge {pledgeStatus?.accepted ? '✓' : ''}</Text>
+            </View>
             <View className={`px-2.5 py-1 rounded-full border border-black ${onboarded ? 'bg-emerald-100' : 'bg-white'}`}>
               <Text className={`text-[10px] font-bold ${onboarded ? 'text-emerald-800' : 'text-retro-dark'}`}>Onboarded {onboarded ? '✓' : ''}</Text>
             </View>
@@ -128,6 +137,9 @@ export default function Profile() {
         <NeonCard variant="cyan" style={{ marginBottom: 14 }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {[
+              { label: `Account${accountStub ? ' ✓' : ''}`, active: !!accountStub },
+              { label: `Agreement${agreementStatus?.accepted ? ' ✓' : ''}`, active: !!agreementStatus?.accepted },
+              { label: `Pledge${pledgeStatus?.accepted ? ' ✓' : ''}`, active: !!pledgeStatus?.accepted },
               { label: `Onboarded${onboarded ? ' ✓' : ''}`, active: !!onboarded },
               { label: `Member${member ? ' ✓' : ''}`, active: !!member },
               {
