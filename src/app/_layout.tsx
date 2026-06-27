@@ -1,18 +1,23 @@
 import "../../global.css";
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import { LuminaProvider } from '../context/LuminaContext';
 import { RETRO_THEME_ENABLED, RETRO_COLORS } from '../theme/retro';
+import { FloatingAssistantButton } from '../components/chat/FloatingAssistantButton';
+import { AssistantChatPanel } from '../components/chat/AssistantChatPanel';
 
 const INK = '#1A1612';
 const CREAM = '#F5F1E9';
 const INACTIVE = '#8A7A6E';
 const BLUE = '#0284C8';
 
-export default function TabLayout() {
+function TabLayoutInner() {
+  const [chatOpen, setChatOpen] = useState(false);
+
   return (
-    <LuminaProvider>
+    <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -119,6 +124,18 @@ export default function TabLayout() {
         <Tabs.Screen name="user-agreement" options={{ href: null }} />
         <Tabs.Screen name="conduct-pledge" options={{ href: null }} />
       </Tabs>
+
+      {/* Side-chat overlay — floats above all tabs, Modal handles its own z-layer */}
+      <FloatingAssistantButton onPress={() => setChatOpen(true)} />
+      <AssistantChatPanel visible={chatOpen} onClose={() => setChatOpen(false)} />
+    </View>
+  );
+}
+
+export default function TabLayout() {
+  return (
+    <LuminaProvider>
+      <TabLayoutInner />
     </LuminaProvider>
   );
 }
