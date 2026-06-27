@@ -17,8 +17,37 @@
 
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Dimensions, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { RETRO_COLORS, RETRO_TIMING } from '../../theme/retro';
+
+// Pure-JS gradient — renders 28 thin strips interpolated between color stops.
+// Replaces expo-linear-gradient so the app runs in Expo Go without a native build.
+function hexToRgb(hex: string): [number, number, number] {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function lerp(a: number, b: number, t: number) { return Math.round(a + (b - a) * t); }
+
+interface JsGradientProps {
+  colors: string[];
+  locations: number[];
+  style?: object;
+}
+function JsGradient({ colors, locations, style }: JsGradientProps) {
+  const STEPS = 28;
+  const rgbs = colors.map(hexToRgb);
+  const strips = Array.from({ length: STEPS }, (_, i) => {
+    const t = i / STEPS;
+    let seg = locations.findIndex(l => l > t) - 1;
+    if (seg < 0) seg = 0;
+    if (seg >= colors.length - 1) seg = colors.length - 2;
+    const segT = (t - locations[seg]) / (locations[seg + 1] - locations[seg]);
+    const [ar, ag, ab] = rgbs[seg];
+    const [br, bg, bb] = rgbs[seg + 1];
+    const c = `rgb(${lerp(ar,br,segT)},${lerp(ag,bg,segT)},${lerp(ab,bb,segT)})`;
+    return <View key={i} style={{ flex: 1, backgroundColor: c }} />;
+  });
+  return <View style={[style, { flexDirection: 'column' }]}>{strips}</View>;
+}
 
 const { width: W, height: H } = Dimensions.get('window');
 
@@ -429,7 +458,7 @@ export function SynthwaveBackground({
   return (
     <View style={styles.root}>
       {/* Layer 1: Gradient sky — near-black space → deep purple → warm orange/pink at horizon */}
-      <LinearGradient
+      <JsGradient
         colors={['#04000F', '#0A0030', '#200060', '#4A0080', '#900060', '#C83040', '#E06028']}
         locations={[0, 0.15, 0.30, 0.48, 0.65, 0.82, 1.0]}
         style={StyleSheet.absoluteFill}
