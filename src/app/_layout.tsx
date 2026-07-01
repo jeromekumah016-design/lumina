@@ -94,6 +94,7 @@ export default function TabLayout() {
         <Tabs.Screen name="onboarding" options={{ href: null }} />
         <Tabs.Screen name="subscribe" options={{ href: null }} />
         <Tabs.Screen name="matching" options={{ href: null }} />
+        <Tabs.Screen name="intro-bot" options={{ href: null }} />
         <Tabs.Screen name="trip-room" options={{ href: null }} />
         <Tabs.Screen name="explore" options={{ href: null }} />
         <Tabs.Screen name="cycles" options={{ href: null }} />

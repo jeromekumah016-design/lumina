@@ -112,6 +112,7 @@ export default function OnboardingScreen() {
 
   const goToSubscribe = () => router.push('/subscribe' as any);
   const goBackToApp = () => router.back();
+  const goToIntroBot = () => router.push('/intro-bot' as any);
 
   const canGoNext = () => {
     if (currentStep === 'profile') return name.trim().length > 1 && age.length > 0 && !ageError;
@@ -147,6 +148,9 @@ export default function OnboardingScreen() {
               </Text>
             </View>
             <Text className="mt-6 text-center text-retro-dark text-xs">3 cities to start • Chicago, New York, Atlanta</Text>
+            <Pressable onPress={goToIntroBot} className="mt-4 self-center bg-retro-ink border-2 border-black px-4 py-2 rounded-full">
+              <Text className="text-white text-xs font-bold">Run intro signup bot</Text>
+            </Pressable>
           </View>
         );
       case 'profile':
@@ -346,6 +350,13 @@ export default function OnboardingScreen() {
             <Text style={{ color: RETRO_COLORS.textMuted, fontSize: 11, textAlign: 'center' }}>
               3 cities to start · Chicago, New York, Atlanta
             </Text>
+            <NeonButton
+              label="RUN INTRO SIGNUP BOT"
+              onPress={goToIntroBot}
+              variant="magenta"
+              size="sm"
+              style={{ marginTop: 14 }}
+            />
           </View>
         );
 

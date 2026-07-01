@@ -45,9 +45,14 @@ export default function Feed() {
           <View className="mt-3 bg-amber-100 border-2 border-black shadow-retro-sm rounded-2xl p-4">
             <Text className="font-extrabold text-retro-ink">Unlock the full Lumina experience</Text>
             <Text className="text-sm text-retro-dark mt-1">Onboard + subscribe to join the matching queue and vote in the Game with your group.</Text>
-            <Pressable onPress={() => router.push('/onboarding' as any)} className="mt-3 bg-retro-ink border-2 border-black self-start px-4 py-1.5 rounded-full">
-              <Text className="text-white text-xs font-bold">Start Onboarding</Text>
-            </Pressable>
+            <View className="mt-3 flex-row gap-2">
+              <Pressable onPress={() => router.push('/onboarding' as any)} className="bg-retro-ink border-2 border-black self-start px-4 py-1.5 rounded-full">
+                <Text className="text-white text-xs font-bold">Start Onboarding</Text>
+              </Pressable>
+              <Pressable onPress={() => router.push('/intro-bot' as any)} className="bg-retro-blue border-2 border-black self-start px-4 py-1.5 rounded-full">
+                <Text className="text-white text-xs font-bold">Run Intro Bot</Text>
+              </Pressable>
+            </View>
           </View>
         ) : null}
 
@@ -126,12 +131,20 @@ export default function Feed() {
             <Text style={{ color: RETRO_COLORS.textSecondary, fontSize: 12, marginBottom: 10 }}>
               Onboard + subscribe to join the matching queue and vote in the Game with your group.
             </Text>
-            <NeonButton
-              label="START ONBOARDING"
-              onPress={() => router.push('/onboarding' as any)}
-              variant="magenta"
-              size="sm"
-            />
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <NeonButton
+                label="START ONBOARDING"
+                onPress={() => router.push('/onboarding' as any)}
+                variant="magenta"
+                size="sm"
+              />
+              <NeonButton
+                label="RUN INTRO BOT"
+                onPress={() => router.push('/intro-bot' as any)}
+                variant="cyan"
+                size="sm"
+              />
+            </View>
           </NeonPanel>
         )}
 
