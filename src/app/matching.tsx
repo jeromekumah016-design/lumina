@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useLuminaState } from '../context/LuminaContext';
+import { userService } from '../services/userService';
 import { RETRO_THEME_ENABLED, RETRO_COLORS, RETRO_FONT } from '../theme/retro';
 import { SynthwaveBackground } from '../components/retro/SynthwaveBackground';
 import { NeonCard } from '../components/retro/NeonCard';
@@ -23,26 +24,44 @@ export default function MatchingScreen() {
   } = useLuminaState();
   const [loading, setLoading] = useState(false);
   const [matchResult, setMatchResult] = useState<{ groupPreview: any[] } | null>(null);
+  const [rankedPreview, setRankedPreview] = useState<Array<{ id: string; name: string; total: number; interests: string[]; socialStyle: { introversion: number; adventurousness: number } }>>([]);
+  const [feedbackSaving, setFeedbackSaving] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const isMember = membership?.hasActiveMembership;
   const isMatched = matching?.status === 'matched';
   const isQueued = matching?.status === 'queued';
+  const queueCity = matching?.queuedCity || currentProfile?.preferredCity || 'Chicago';
 
   const handleJoinQueue = async () => {
     setLoading(true);
-    try { await sharedJoin(); } finally { setLoading(false); }
+    setActionError(null);
+    try {
+      const introReady = await userService.isIntroProfileReady();
+      if (!introReady) {
+        setActionError('Complete the Intro Bot first so matching can use your interests and social style.');
+        return;
+      }
+      await sharedJoin();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Unable to join queue.');
+    } finally { setLoading(false); }
   };
 
   const handleSimulateMatch = async () => {
     setLoading(true);
+    setActionError(null);
     try {
       const res = await sharedSimulate();
       if (res) setMatchResult({ groupPreview: res.groupPreview });
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : 'Unable to simulate matching.');
     } finally { setLoading(false); }
   };
 
   const handleReset = async () => {
     setLoading(true);
+    setActionError(null);
     try {
       await sharedLeave();
       setMatchResult(null);
@@ -51,11 +70,52 @@ export default function MatchingScreen() {
 
   const goToGame = () => { router.push('/game'); };
 
+  const handleFeedback = async (rating: number) => {
+    const candidate = rankedPreview[0];
+    if (!candidate) return;
+    setFeedbackSaving(true);
+    try {
+      await userService.recordInteractionFeedback({
+        candidateId: candidate.id,
+        rating,
+        interests: candidate.interests,
+        socialStyle: candidate.socialStyle,
+      });
+      const refreshed = await userService.getRankedCandidates(queueCity);
+      setRankedPreview(
+        refreshed.slice(0, 4).map((item) => ({
+          id: item.id,
+          name: item.name,
+          total: item.compatibility.total,
+          interests: item.interests,
+          socialStyle: item.socialStyle,
+        }))
+      );
+    } finally {
+      setFeedbackSaving(false);
+    }
+  };
+
   useEffect(() => {
     if (isMatched && !matchResult && matching?.matchedGroup) {
       setMatchResult({ groupPreview: matching.matchedGroup });
     }
   }, [isMatched, matching]);
+
+  useEffect(() => {
+    (async () => {
+      const next = await userService.getRankedCandidates(queueCity);
+      setRankedPreview(
+        next.slice(0, 4).map((item) => ({
+          id: item.id,
+          name: item.name,
+          total: item.compatibility.total,
+          interests: item.interests,
+          socialStyle: item.socialStyle,
+        }))
+      );
+    })();
+  }, [queueCity, isQueued, isMatched]);
 
   const menNeeded = 5;
   const womenNeeded = 5;
@@ -122,6 +182,11 @@ export default function MatchingScreen() {
               <Text className="text-sm font-semibold text-retro-ink">Men</Text>
               <Text className="text-sm font-bold text-retro-ink">{currentMen} / {menNeeded}</Text>
             </View>
+            {actionError ? (
+              <View className="bg-amber-100 border-2 border-black shadow-retro-sm rounded-2xl p-3 mb-4">
+                <Text className="text-xs font-semibold text-retro-ink">{actionError}</Text>
+              </View>
+            ) : null}
             <View className="h-2 bg-white border border-black rounded-full overflow-hidden mb-3">
               <View className="h-full bg-retro-navy" style={{ width: `${(currentMen / menNeeded) * 100}%` }} />
             </View>
@@ -133,6 +198,19 @@ export default function MatchingScreen() {
               <View className="h-full bg-retro-pink" style={{ width: `${(currentWomen / womenNeeded) * 100}%` }} />
             </View>
             <Text className="text-[11px] text-retro-dark mt-3">Matching runs daily. We only form the group when both sides hit the exact numbers.</Text>
+          </View>
+
+          <View className="bg-retro-paper border-2 border-black shadow-retro-sm rounded-2xl p-4 mb-4">
+            <Text className="text-sm font-extrabold text-retro-ink">Top compatibility picks in Chicago</Text>
+            <Text className="text-[11px] text-retro-dark mt-1">Based on shared interests + social style + your rating history.</Text>
+            <View className="mt-3">
+              {rankedPreview.map((item) => (
+                <View key={item.id} className="flex-row justify-between items-center mb-2">
+                  <Text className="text-xs font-semibold text-retro-ink">{item.name}</Text>
+                  <Text className="text-xs font-bold text-retro-blue">{Math.round(item.total * 100)}%</Text>
+                </View>
+              ))}
+            </View>
           </View>
 
           {!isMatched && isMember && (
@@ -171,6 +249,17 @@ export default function MatchingScreen() {
                 <Pressable onPress={goToGame} className="mt-4 bg-retro-ink py-2.5 rounded-xl border-2 border-black shadow-retro-sm items-center">
                   <Text className="text-white font-bold">Go to Game — vote on properties</Text>
                 </Pressable>
+                <View className="mt-4">
+                  <Text className="text-xs text-retro-dark mb-2">How was your latest interaction quality?</Text>
+                  <View className="flex-row gap-2">
+                    <Pressable disabled={feedbackSaving} onPress={() => handleFeedback(5)} className="bg-emerald-600 px-3 py-2 rounded-full border border-black">
+                      <Text className="text-white text-xs font-bold">Great (5)</Text>
+                    </Pressable>
+                    <Pressable disabled={feedbackSaving} onPress={() => handleFeedback(2)} className="bg-amber-600 px-3 py-2 rounded-full border border-black">
+                      <Text className="text-white text-xs font-bold">Not great (2)</Text>
+                    </Pressable>
+                  </View>
+                </View>
               </View>
             </View>
           )}
@@ -194,8 +283,6 @@ export default function MatchingScreen() {
   }
 
   // ── Retro synthwave render ──────────────────────────────────────────────────
-  const queueCity = matching?.queuedCity || currentProfile?.preferredCity || 'Chicago';
-
   return (
     <SynthwaveBackground>
       <View style={{ flex: 1 }}>
@@ -306,6 +393,30 @@ export default function MatchingScreen() {
               Matching runs daily. We only form the group when both sides hit the exact numbers.
             </Text>
           </NeonCard>
+          {actionError ? (
+            <NeonPanel variant="warning" style={{ marginBottom: 16 }}>
+              <Text style={{ color: RETRO_COLORS.neonOrange, fontSize: 12, fontWeight: '700' }}>{actionError}</Text>
+            </NeonPanel>
+          ) : null}
+
+          <NeonCard variant="cyan" style={{ marginBottom: 16 }}>
+            <Text style={{ color: RETRO_COLORS.textPrimary, fontWeight: '700', fontSize: 13 }}>
+              TOP COMPATIBILITY PICKS · CHICAGO
+            </Text>
+            <Text style={{ color: RETRO_COLORS.textSecondary, fontSize: 11, marginTop: 4 }}>
+              Shared interests + social style + your rating history.
+            </Text>
+            <View style={{ marginTop: 10 }}>
+              {rankedPreview.map((item) => (
+                <View key={item.id} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <Text style={{ color: RETRO_COLORS.textPrimary, fontSize: 12, fontWeight: '600' }}>{item.name}</Text>
+                  <Text style={{ color: RETRO_COLORS.neonCyan, fontSize: 12, fontWeight: '700' }}>
+                    {Math.round(item.total * 100)}%
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </NeonCard>
 
           {/* Actions */}
           {!isMatched && isMember && (
@@ -390,6 +501,27 @@ export default function MatchingScreen() {
                 size="md"
                 fullWidth
               />
+              <View style={{ marginTop: 12 }}>
+                <Text style={{ color: RETRO_COLORS.textSecondary, fontSize: 11, marginBottom: 8 }}>
+                  How was your latest interaction quality?
+                </Text>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <NeonButton
+                    label={feedbackSaving ? 'SAVING...' : 'GREAT (5)'}
+                    onPress={() => handleFeedback(5)}
+                    variant="cyan"
+                    size="sm"
+                    disabled={feedbackSaving}
+                  />
+                  <NeonButton
+                    label={feedbackSaving ? 'SAVING...' : 'NOT GREAT (2)'}
+                    onPress={() => handleFeedback(2)}
+                    variant="magenta"
+                    size="sm"
+                    disabled={feedbackSaving}
+                  />
+                </View>
+              </View>
             </NeonPanel>
           )}
 

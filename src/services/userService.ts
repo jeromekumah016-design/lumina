@@ -1,4 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { compatibilityService } from './compatibilityService';
+import {
+  InteractionFeedback,
+  IntroProfile,
+  MatchCandidate,
+  UserMatchingProfile,
+} from '../types/matching';
 
 export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 
@@ -25,23 +32,55 @@ export interface MatchingStatus {
   matchedGroup?: Array<{ name: string; gender: string }>;
 }
 
+const CHICAGO_CANDIDATES: MatchCandidate[] = [
+  { id: 'chi-f-1', name: 'Emma', gender: 'FEMALE', city: 'Chicago', interests: ['food', 'live music', 'art', 'walks'], socialStyle: { introversion: 0.42, adventurousness: 0.66 } },
+  { id: 'chi-f-2', name: 'Olivia', gender: 'FEMALE', city: 'Chicago', interests: ['hiking', 'wellness', 'coffee', 'books'], socialStyle: { introversion: 0.71, adventurousness: 0.41 } },
+  { id: 'chi-f-3', name: 'Sophia', gender: 'FEMALE', city: 'Chicago', interests: ['food', 'travel photos', 'events'], socialStyle: { introversion: 0.36, adventurousness: 0.73 } },
+  { id: 'chi-f-4', name: 'Isabella', gender: 'FEMALE', city: 'Chicago', interests: ['museums', 'books', 'architecture'], socialStyle: { introversion: 0.78, adventurousness: 0.34 } },
+  { id: 'chi-f-5', name: 'Mia', gender: 'FEMALE', city: 'Chicago', interests: ['dance', 'nightlife', 'food'], socialStyle: { introversion: 0.25, adventurousness: 0.86 } },
+  { id: 'chi-f-6', name: 'Harper', gender: 'FEMALE', city: 'Chicago', interests: ['yoga', 'brunch', 'local markets'], socialStyle: { introversion: 0.59, adventurousness: 0.49 } },
+  { id: 'chi-m-1', name: 'Liam', gender: 'MALE', city: 'Chicago', interests: ['sports', 'food', 'live music'], socialStyle: { introversion: 0.31, adventurousness: 0.69 } },
+  { id: 'chi-m-2', name: 'Noah', gender: 'MALE', city: 'Chicago', interests: ['museums', 'books', 'coffee'], socialStyle: { introversion: 0.73, adventurousness: 0.37 } },
+  { id: 'chi-m-3', name: 'Oliver', gender: 'MALE', city: 'Chicago', interests: ['hiking', 'photography', 'travel'], socialStyle: { introversion: 0.46, adventurousness: 0.74 } },
+  { id: 'chi-m-4', name: 'James', gender: 'MALE', city: 'Chicago', interests: ['gaming', 'movies', 'food'], socialStyle: { introversion: 0.63, adventurousness: 0.44 } },
+  { id: 'chi-m-5', name: 'Lucas', gender: 'MALE', city: 'Chicago', interests: ['nightlife', 'dance', 'events'], socialStyle: { introversion: 0.22, adventurousness: 0.83 } },
+  { id: 'chi-m-6', name: 'Henry', gender: 'MALE', city: 'Chicago', interests: ['wellness', 'runs', 'architecture'], socialStyle: { introversion: 0.52, adventurousness: 0.51 } },
+];
+
 const STORAGE_KEYS = {
   PROFILE: 'lumina:user:profile',
   ONBOARDED: 'lumina:user:onboarded',
   MEMBERSHIP: 'lumina:user:membership',
   MATCHING: 'lumina:user:matching',
   COMPLETED_CYCLES: 'lumina:user:completedCycles',
+  MATCHING_PROFILE: 'lumina:user:matchingProfile',
 } as const;
 
 const DEFAULT_PROFILE: UserProfile = { name: 'Alex Rivera', gender: 'MALE', age: 28, preferredCity: 'Chicago' };
 const DEFAULT_MEMBERSHIP: MembershipStatus = { hasActiveMembership: false };
 const DEFAULT_MATCHING: MatchingStatus = { status: 'not_queued' };
+const DEFAULT_INTRO_PROFILE: IntroProfile = {
+  interests: ['food', 'travel', 'music'],
+  socialStyle: { introversion: 0.5, adventurousness: 0.5 },
+  tripPace: 'balanced',
+};
+const DEFAULT_MATCHING_PROFILE: UserMatchingProfile = {
+  introProfile: DEFAULT_INTRO_PROFILE,
+  preferenceModel: {
+    targetSocialStyle: { ...DEFAULT_INTRO_PROFILE.socialStyle },
+    interestAffinity: {},
+    weights: { interestWeight: 0.55, socialStyleWeight: 0.45 },
+  },
+  interactionCount: 0,
+  updatedAt: new Date(0).toISOString(),
+};
 
 let cachedProfile: UserProfile | null = null;
 let cachedOnboarded: boolean | null = null;
 let cachedMembership: MembershipStatus | null = null;
 let cachedMatching: MatchingStatus | null = null;
 let cachedCompletedCycles: string[] | null = null;
+let cachedMatchingProfile: UserMatchingProfile | null = null;
 
 async function load<T>(key: string, fallback: T): Promise<T> {
   try { const raw = await AsyncStorage.getItem(key); if (raw) return JSON.parse(raw) as T; } catch {}
@@ -97,6 +136,71 @@ export const userService = {
     const s = await load<MatchingStatus>(STORAGE_KEYS.MATCHING, DEFAULT_MATCHING);
     cachedMatching = s; return s;
   },
+  async getMatchingProfile(): Promise<UserMatchingProfile> {
+    if (cachedMatchingProfile) return cachedMatchingProfile;
+    const profile = await load<UserMatchingProfile>(STORAGE_KEYS.MATCHING_PROFILE, DEFAULT_MATCHING_PROFILE);
+    cachedMatchingProfile = profile;
+    return profile;
+  },
+  async isIntroProfileReady(): Promise<boolean> {
+    const profile = await this.getMatchingProfile();
+    return profile.introProfile.interests.length >= 2 && !!profile.introProfile.completedAt;
+  },
+  async saveIntroProfile(updates: Partial<IntroProfile>): Promise<UserMatchingProfile> {
+    const current = await this.getMatchingProfile();
+    const interests = updates.interests?.length ? updates.interests : current.introProfile.interests;
+    const next: UserMatchingProfile = {
+      ...current,
+      introProfile: {
+        ...current.introProfile,
+        ...updates,
+        interests,
+        socialStyle: {
+          ...current.introProfile.socialStyle,
+          ...(updates.socialStyle || {}),
+        },
+      },
+      preferenceModel: {
+        ...current.preferenceModel,
+        targetSocialStyle: {
+          ...current.preferenceModel.targetSocialStyle,
+          ...(updates.socialStyle || {}),
+        },
+      },
+      updatedAt: new Date().toISOString(),
+    };
+    await save(STORAGE_KEYS.MATCHING_PROFILE, next);
+    cachedMatchingProfile = next;
+    return next;
+  },
+  async recordInteractionFeedback(feedback: Omit<InteractionFeedback, 'createdAt'>): Promise<UserMatchingProfile> {
+    const current = await this.getMatchingProfile();
+    const nextFeedback: InteractionFeedback = {
+      ...feedback,
+      createdAt: new Date().toISOString(),
+    };
+    const next: UserMatchingProfile = {
+      ...current,
+      preferenceModel: compatibilityService.updatePreferenceModel(current.preferenceModel, nextFeedback),
+      interactionCount: current.interactionCount + 1,
+      updatedAt: new Date().toISOString(),
+    };
+    await save(STORAGE_KEYS.MATCHING_PROFILE, next);
+    cachedMatchingProfile = next;
+    return next;
+  },
+  async getRankedCandidates(city?: string) {
+    const profile = await this.getMatchingProfile();
+    const currentProfile = await this.getProfile();
+    const requestedCity = city || currentProfile.preferredCity || 'Chicago';
+    const targetCity = requestedCity === 'Chicago' ? requestedCity : 'Chicago';
+    const cityCandidates = CHICAGO_CANDIDATES.filter((candidate) => candidate.city === targetCity);
+    return compatibilityService.rankCandidates(
+      profile.introProfile.interests,
+      profile.preferenceModel,
+      cityCandidates
+    );
+  },
   async joinQueue(city?: string): Promise<MatchingStatus> {
     const profile = await this.getProfile();
     const status: MatchingStatus = { status: 'queued', queuedCity: city || profile.preferredCity };
@@ -110,15 +214,21 @@ export const userService = {
     }
     const profile = await this.getProfile();
     if (current.status !== 'queued') await this.joinQueue();
-    const groupPreview = [
-      { name: 'Emma', gender: 'FEMALE' }, { name: 'Olivia', gender: 'FEMALE' },
-      { name: 'Sophia', gender: 'FEMALE' }, { name: 'Isabella', gender: 'FEMALE' },
-      { name: 'Mia', gender: 'FEMALE' }, { name: 'Liam', gender: 'MALE' },
-      { name: 'Noah', gender: 'MALE' }, { name: 'Oliver', gender: 'MALE' },
-      { name: 'James', gender: 'MALE' }, { name: 'Lucas', gender: 'MALE' },
-    ];
+    const requestedCity = current.queuedCity || profile.preferredCity || 'Chicago';
+    const queueCity = requestedCity === 'Chicago' ? requestedCity : 'Chicago';
+    const ranked = await this.getRankedCandidates(queueCity);
+    const topWomen = ranked.filter((candidate) => candidate.gender === 'FEMALE').slice(0, 5);
+    const topMen = ranked.filter((candidate) => candidate.gender === 'MALE').slice(0, 5);
+    const fallbackWomen = CHICAGO_CANDIDATES.filter((candidate) => candidate.city === queueCity && candidate.gender === 'FEMALE');
+    const fallbackMen = CHICAGO_CANDIDATES.filter((candidate) => candidate.city === queueCity && candidate.gender === 'MALE');
+    const selectedWomen = topWomen.length >= 5 ? topWomen : fallbackWomen.slice(0, 5);
+    const selectedMen = topMen.length >= 5 ? topMen : fallbackMen.slice(0, 5);
+    const groupPreview = [...selectedWomen, ...selectedMen].map((candidate) => ({
+      name: candidate.name,
+      gender: candidate.gender,
+    }));
     const matched: MatchingStatus = {
-      status: 'matched', queuedCity: current.queuedCity || profile.preferredCity,
+      status: 'matched', queuedCity: queueCity,
       matchedGroupId: 'grp-' + Date.now().toString(36), matchedAt: new Date().toISOString(), matchedGroup: groupPreview,
     };
     await save(STORAGE_KEYS.MATCHING, matched); cachedMatching = matched;
@@ -152,5 +262,6 @@ export const userService = {
     await AsyncStorage.multiRemove(Object.values(STORAGE_KEYS));
     cachedProfile = null; cachedOnboarded = null; cachedMembership = null; cachedMatching = null;
     cachedCompletedCycles = null;
+    cachedMatchingProfile = null;
   },
 };
