@@ -1,3 +1,5 @@
+import type { Archetype } from './questionnaire';
+
 export type TripPace = 'relaxed' | 'balanced' | 'high-energy';
 
 export interface SocialStyleVector {
@@ -14,6 +16,8 @@ export interface IntroProfile {
   interests: string[];
   socialStyle: SocialStyleVector;
   tripPace: TripPace;
+  /** Persisted profile category from the forced-choice questionnaire. */
+  archetype?: Archetype;
   completedAt?: string;
 }
 
@@ -44,6 +48,8 @@ export interface CompatibilityBreakdown {
   interest: number;
   social: number;
   affinityBoost: number;
+  /** Present only when the scoring user has a persisted archetype. */
+  archetypeSynergy?: number;
 }
 
 export interface RankedCandidate extends MatchCandidate {

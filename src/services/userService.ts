@@ -198,7 +198,8 @@ export const userService = {
     return compatibilityService.rankCandidates(
       profile.introProfile.interests,
       profile.preferenceModel,
-      cityCandidates
+      cityCandidates,
+      profile.introProfile.archetype
     );
   },
   async joinQueue(city?: string): Promise<MatchingStatus> {
@@ -259,7 +260,9 @@ export const userService = {
     return { onboarded, profile, membership, matching };
   },
   async resetAllDemoData(): Promise<void> {
-    await AsyncStorage.multiRemove(Object.values(STORAGE_KEYS));
+    // 'lumina:user:questionnaire' is owned by questionnaireService; listed by
+    // literal here to avoid a userService <-> questionnaireService import cycle.
+    await AsyncStorage.multiRemove([...Object.values(STORAGE_KEYS), 'lumina:user:questionnaire']);
     cachedProfile = null; cachedOnboarded = null; cachedMembership = null; cachedMatching = null;
     cachedCompletedCycles = null;
     cachedMatchingProfile = null;

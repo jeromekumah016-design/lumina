@@ -286,7 +286,8 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   imageNeonFrame: {
-    ...StyleSheet.absoluteFillObject,
+    // StyleSheet.absoluteFillObject does not exist in RN 0.85 — explicit fill.
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     borderWidth: 2,
     borderColor: RETRO_COLORS.neonCyan,
     opacity: 0.4,
@@ -331,7 +332,8 @@ const styles = StyleSheet.create({
 
   // Eliminated overlay
   eliminatedOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    // StyleSheet.absoluteFillObject does not exist in RN 0.85 — explicit fill.
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.72)',
     alignItems: 'center',
     justifyContent: 'center',

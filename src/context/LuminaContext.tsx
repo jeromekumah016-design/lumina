@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { userService, UserProfile, MembershipStatus, MatchingStatus, MatchingStatusType } from '../services/userService';
 import { propertyService } from '../services/propertyService';
 import { cycleService } from '../services/cycleService';
+import { questionnaireService } from '../services/questionnaireService';
 
 export interface LuminaState {
   onboarded: boolean;
@@ -93,6 +94,7 @@ export function LuminaProvider({ children }: { children: ReactNode }) {
     try { await userService.resetAllDemoData(); } catch (e) { console.warn('userService.resetAllDemoData failed', e); }
     try { await (propertyService as any).resetAll?.(); } catch (e) { console.warn('propertyService.resetAll failed', e); }
     try { await cycleService.resetAll(); } catch (e) { console.warn('cycleService.resetAll failed', e); }
+    try { await questionnaireService.reset(); } catch (e) { console.warn('questionnaireService.reset failed', e); }
     await refresh();
   }, [refresh]);
 

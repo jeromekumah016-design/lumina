@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, Image, Pressable, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useLuminaState } from '../context/LuminaContext';
+import { ARCHETYPE_INFO, questionnaireService } from '../services/questionnaireService';
+import { Archetype } from '../types/questionnaire';
 import { RETRO_THEME_ENABLED, RETRO_COLORS, RETRO_FONT } from '../theme/retro';
 import { SynthwaveBackground } from '../components/retro/SynthwaveBackground';
 import { NeonCard } from '../components/retro/NeonCard';
@@ -18,9 +20,26 @@ const GROUP = [
 
 export default function Profile() {
   const { onboarded, membership, matching, resetAllDemoData, isLoading } = useLuminaState();
+  const [archetype, setArchetype] = useState<Archetype | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      (async () => {
+        try {
+          const saved = await questionnaireService.getSaved();
+          if (active) setArchetype(saved?.result.archetype ?? null);
+        } catch (e) {
+          console.warn('Failed to load archetype', e);
+        }
+      })();
+      return () => { active = false; };
+    }, [])
+  );
 
   const member = membership?.hasActiveMembership;
   const matchStatus = matching?.status;
+  const archetypeInfo = archetype ? ARCHETYPE_INFO[archetype] : null;
 
   const handleReset = async () => {
     await resetAllDemoData();
@@ -54,6 +73,24 @@ export default function Profile() {
             </View>
           </View>
         </View>
+
+        <Pressable
+          onPress={() => router.push('/questionnaire' as any)}
+          className="mb-4 bg-retro-paper border-2 border-black shadow-retro-sm rounded-2xl p-3 flex-row items-center"
+        >
+          <Ionicons name={archetypeInfo ? 'sparkles' : 'help-circle-outline'} size={18} color="#0284C8" />
+          <View className="flex-1 ml-2">
+            {archetypeInfo ? (
+              <>
+                <Text className="text-xs font-bold text-retro-ink">{archetypeInfo.title}</Text>
+                <Text className="text-[10px] text-retro-dark">{archetypeInfo.tagline}</Text>
+              </>
+            ) : (
+              <Text className="text-xs font-bold text-retro-ink">Take the travel archetype quiz</Text>
+            )}
+          </View>
+          <Ionicons name="chevron-forward" size={14} color="#6F6256" />
+        </Pressable>
 
         <View className="flex-row gap-2 mb-4">
           <Pressable onPress={() => router.push('/onboarding' as any)} className="flex-1 bg-retro-paper border-2 border-black shadow-retro-sm py-2 rounded-xl items-center">
@@ -152,6 +189,30 @@ export default function Profile() {
             ))}
           </View>
         </NeonCard>
+
+        {/* Archetype card */}
+        <Pressable onPress={() => router.push('/questionnaire' as any)}>
+          <NeonCard variant="magenta" style={{ marginBottom: 14, flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons
+              name={archetypeInfo ? 'sparkles' : 'help-circle-outline'}
+              size={18}
+              color={RETRO_COLORS.neonMagenta}
+            />
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              {archetypeInfo ? (
+                <>
+                  <Text style={{ color: RETRO_COLORS.textPrimary, fontWeight: '800', fontSize: 13 }}>{archetypeInfo.title}</Text>
+                  <Text style={{ color: RETRO_COLORS.textSecondary, fontSize: 10 }}>{archetypeInfo.tagline}</Text>
+                </>
+              ) : (
+                <Text style={{ color: RETRO_COLORS.textPrimary, fontWeight: '700', fontSize: 12 }}>
+                  Take the travel archetype quiz
+                </Text>
+              )}
+            </View>
+            <Ionicons name="chevron-forward" size={14} color={RETRO_COLORS.neonMagenta} />
+          </NeonCard>
+        </Pressable>
 
         {/* Quick action buttons */}
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 18 }}>
