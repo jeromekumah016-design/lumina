@@ -113,6 +113,7 @@ export default function OnboardingScreen() {
   const goToSubscribe = () => router.push('/subscribe' as any);
   const goBackToApp = () => router.back();
   const goToIntroBot = () => router.push('/intro-bot' as any);
+  const goToQuestionnaire = () => router.push('/questionnaire' as any);
 
   const canGoNext = () => {
     if (currentStep === 'profile') return name.trim().length > 1 && age.length > 0 && !ageError;
@@ -150,6 +151,9 @@ export default function OnboardingScreen() {
             <Text className="mt-6 text-center text-retro-dark text-xs">3 cities to start • Chicago, New York, Atlanta</Text>
             <Pressable onPress={goToIntroBot} className="mt-4 self-center bg-retro-ink border-2 border-black px-4 py-2 rounded-full">
               <Text className="text-white text-xs font-bold">Run intro signup bot</Text>
+            </Pressable>
+            <Pressable onPress={goToQuestionnaire} className="mt-2 self-center bg-retro-blue border-2 border-black px-4 py-2 rounded-full">
+              <Text className="text-white text-xs font-bold">Take the travel archetype quiz</Text>
             </Pressable>
           </View>
         );
@@ -356,6 +360,13 @@ export default function OnboardingScreen() {
               variant="magenta"
               size="sm"
               style={{ marginTop: 14 }}
+            />
+            <NeonButton
+              label="TAKE THE ARCHETYPE QUIZ"
+              onPress={goToQuestionnaire}
+              variant="cyan"
+              size="sm"
+              style={{ marginTop: 10 }}
             />
           </View>
         );

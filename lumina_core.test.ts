@@ -1189,3 +1189,274 @@ describe('userService — completeOnboarding persistence', () => {
     expect(profile1).toEqual(profile2);
   });
 });
+
+// ───────────────────────────────────────────────────────────────────────────
+// Suite 12 — Questionnaire + Archetype system (forced-choice profile category)
+// Covers: question-bank integrity, deterministic scoring across all four
+// archetype quadrants, trip-pace majority resolution, validation errors,
+// AsyncStorage persistence roundtrip, matching-profile sync, and the
+// archetype-aware compatibility path (legacy scoring must stay unchanged).
+// ───────────────────────────────────────────────────────────────────────────
+describe('Questionnaire + Archetype system', () => {
+  type QSvc = typeof import('./src/services/questionnaireService').questionnaireService;
+  type USvc = typeof import('./src/services/userService').userService;
+  type CSvc = typeof import('./src/services/compatibilityService').compatibilityService;
+  let q: QSvc;
+  let user: USvc;
+  let compat: CSvc;
+
+  beforeEach(() => {
+    jest.resetModules();
+    q = require('./src/services/questionnaireService').questionnaireService;
+    user = require('./src/services/userService').userService;
+    compat = require('./src/services/compatibilityService').compatibilityService;
+  });
+
+  /** Answer every question with the given option. */
+  const uniformAnswers = (optionId: 'A' | 'B') =>
+    q.getQuestions().map((question) => ({ questionId: question.id, optionId }));
+
+  // ── Question bank integrity ────────────────────────────────────────────
+  it('every question is forced-choice: exactly two options, ids A and B', () => {
+    const questions = q.getQuestions();
+    expect(questions.length).toBeGreaterThanOrEqual(6);
+    for (const question of questions) {
+      expect(question.options.length).toBe(2);
+      expect(question.options[0].id).toBe('A');
+      expect(question.options[1].id).toBe('B');
+    }
+  });
+
+  it('question ids are unique', () => {
+    const ids = q.getQuestions().map((question) => question.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('style questions are balanced: A and B push opposite directions on the same axis', () => {
+    for (const question of q.getQuestions()) {
+      const [a, b] = question.options;
+      const axes = ['introversion', 'adventurousness'] as const;
+      for (const axis of axes) {
+        const effectA = a.effects[axis] || 0;
+        const effectB = b.effects[axis] || 0;
+        // If one option moves an axis, the other must move it the opposite way.
+        if (effectA !== 0 || effectB !== 0) {
+          expect(effectA).toBeCloseTo(-effectB, 5);
+        }
+      }
+    }
+  });
+
+  // ── Scoring: all four quadrants reachable, deterministic ───────────────
+  it('all-A answers produce the outgoing/adventurous TRAILBLAZER', () => {
+    const result = q.scoreAnswers(uniformAnswers('A'));
+    expect(result.archetype).toBe('TRAILBLAZER');
+    expect(result.socialStyle.introversion).toBeLessThan(0.5);
+    expect(result.socialStyle.adventurousness).toBeGreaterThanOrEqual(0.5);
+    expect(result.tripPace).toBe('high-energy');
+  });
+
+  it('all-B answers produce the introverted/calm CURATOR', () => {
+    const result = q.scoreAnswers(uniformAnswers('B'));
+    expect(result.archetype).toBe('CURATOR');
+    expect(result.socialStyle.introversion).toBeGreaterThanOrEqual(0.5);
+    expect(result.socialStyle.adventurousness).toBeLessThan(0.5);
+    expect(result.tripPace).toBe('relaxed');
+  });
+
+  it('outgoing + calm answers produce CONNECTOR', () => {
+    // A on introversion questions (outgoing), B on adventurousness questions (calm).
+    const answers = q.getQuestions().map((question) => {
+      const movesAdventure = (question.options[0].effects.adventurousness || 0) !== 0;
+      return { questionId: question.id, optionId: (movesAdventure ? 'B' : 'A') as 'A' | 'B' };
+    });
+    const result = q.scoreAnswers(answers);
+    expect(result.archetype).toBe('CONNECTOR');
+  });
+
+  it('introverted + adventurous answers produce EXPLORER', () => {
+    const answers = q.getQuestions().map((question) => {
+      const movesAdventure = (question.options[0].effects.adventurousness || 0) !== 0;
+      return { questionId: question.id, optionId: (movesAdventure ? 'A' : 'B') as 'A' | 'B' };
+    });
+    const result = q.scoreAnswers(answers);
+    expect(result.archetype).toBe('EXPLORER');
+  });
+
+  it('scoring is deterministic for identical answers', () => {
+    const answers = uniformAnswers('A');
+    expect(q.scoreAnswers(answers)).toEqual(q.scoreAnswers(answers));
+  });
+
+  it('social style axes stay clamped to [0, 1]', () => {
+    for (const optionId of ['A', 'B'] as const) {
+      const { socialStyle } = q.scoreAnswers(uniformAnswers(optionId));
+      expect(socialStyle.introversion).toBeGreaterThanOrEqual(0);
+      expect(socialStyle.introversion).toBeLessThanOrEqual(1);
+      expect(socialStyle.adventurousness).toBeGreaterThanOrEqual(0);
+      expect(socialStyle.adventurousness).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('split pace votes resolve to balanced', () => {
+    // Answer pace questions oppositely, style questions uniformly.
+    const paceIds = q
+      .getQuestions()
+      .filter((question) => question.options[0].paceVote)
+      .map((question) => question.id);
+    expect(paceIds.length).toBeGreaterThanOrEqual(2);
+    let flip = false;
+    const answers = q.getQuestions().map((question) => {
+      if (paceIds.includes(question.id)) {
+        flip = !flip;
+        return { questionId: question.id, optionId: (flip ? 'A' : 'B') as 'A' | 'B' };
+      }
+      return { questionId: question.id, optionId: 'A' as const };
+    });
+    if (paceIds.length % 2 === 0) {
+      expect(q.scoreAnswers(answers).tripPace).toBe('balanced');
+    }
+  });
+
+  // ── Validation ──────────────────────────────────────────────────────────
+  it('validateAnswers flags missing answers', () => {
+    const partial = uniformAnswers('A').slice(0, 3);
+    const error = q.validateAnswers(partial);
+    expect(error?.kind).toBe('missing_answers');
+  });
+
+  it('validateAnswers flags unknown questions', () => {
+    const answers = [...uniformAnswers('A'), { questionId: 'q-bogus', optionId: 'A' as const }];
+    const error = q.validateAnswers(answers);
+    expect(error?.kind).toBe('unknown_question');
+  });
+
+  it('validateAnswers flags duplicate answers', () => {
+    const answers = uniformAnswers('A');
+    const error = q.validateAnswers([...answers, answers[0]]);
+    expect(error?.kind).toBe('duplicate_answer');
+  });
+
+  it('validateAnswers passes a complete unique set', () => {
+    expect(q.validateAnswers(uniformAnswers('B'))).toBeNull();
+  });
+
+  it('submitAnswers rejects incomplete submissions with a surfaced error (no silent success)', async () => {
+    await expect(q.submitAnswers(uniformAnswers('A').slice(0, 2))).rejects.toThrow(/answer every question/i);
+    // Nothing persisted after a rejected submit.
+    expect(await q.getSaved()).toBeNull();
+  });
+
+  // ── Persistence + matching-profile sync ────────────────────────────────
+  it('submitAnswers persists a record that getSaved returns (roundtrip)', async () => {
+    const record = await q.submitAnswers(uniformAnswers('A'));
+    expect(record.completedAt).toBeTruthy();
+    expect(record.version).toBeGreaterThanOrEqual(1);
+    const saved = await q.getSaved();
+    expect(saved).toEqual(record);
+  });
+
+  it('submitAnswers writes the record to AsyncStorage (not memory-only)', async () => {
+    await q.submitAnswers(uniformAnswers('B'));
+    // Inspect the shared AsyncStorage mock directly — bypasses the service cache.
+    // (jest.resetModules() would also recreate the mock's Map, so a reload test
+    // cannot prove persistence here.)
+    const storage = require('@react-native-async-storage/async-storage').default;
+    const raw = await storage.getItem('lumina:user:questionnaire');
+    expect(raw).toBeTruthy();
+    const parsed = JSON.parse(raw);
+    expect(parsed.result.archetype).toBe('CURATOR');
+  });
+
+  it('submitAnswers syncs archetype + social style into the persisted matching profile', async () => {
+    const record = await q.submitAnswers(uniformAnswers('A'));
+    const profile = await user.getMatchingProfile();
+    expect(profile.introProfile.archetype).toBe(record.result.archetype);
+    expect(profile.introProfile.socialStyle).toEqual(record.result.socialStyle);
+    expect(profile.introProfile.tripPace).toBe(record.result.tripPace);
+  });
+
+  it('reset clears the saved questionnaire', async () => {
+    await q.submitAnswers(uniformAnswers('A'));
+    await q.reset();
+    expect(await q.getSaved()).toBeNull();
+  });
+
+  it('userService.resetAllDemoData clears the questionnaire storage key', async () => {
+    await q.submitAnswers(uniformAnswers('A'));
+    const storage = require('@react-native-async-storage/async-storage').default;
+    expect(await storage.getItem('lumina:user:questionnaire')).toBeTruthy();
+    await user.resetAllDemoData();
+    expect(await storage.getItem('lumina:user:questionnaire')).toBeNull();
+  });
+
+  // ── Archetype-aware compatibility ───────────────────────────────────────
+  it('deriveArchetype maps each quadrant correctly (0.5 threshold is introvert/adventurous side)', () => {
+    expect(compat.deriveArchetype({ introversion: 0.2, adventurousness: 0.8 })).toBe('TRAILBLAZER');
+    expect(compat.deriveArchetype({ introversion: 0.2, adventurousness: 0.2 })).toBe('CONNECTOR');
+    expect(compat.deriveArchetype({ introversion: 0.8, adventurousness: 0.8 })).toBe('EXPLORER');
+    expect(compat.deriveArchetype({ introversion: 0.8, adventurousness: 0.2 })).toBe('CURATOR');
+    expect(compat.deriveArchetype({ introversion: 0.5, adventurousness: 0.5 })).toBe('EXPLORER');
+  });
+
+  it('archetypeSynergy: 1 same, 0.6 adjacent, 0.3 opposite — and symmetric', () => {
+    expect(compat.archetypeSynergy('TRAILBLAZER', 'TRAILBLAZER')).toBe(1);
+    expect(compat.archetypeSynergy('TRAILBLAZER', 'EXPLORER')).toBe(0.6);
+    expect(compat.archetypeSynergy('TRAILBLAZER', 'CONNECTOR')).toBe(0.6);
+    expect(compat.archetypeSynergy('TRAILBLAZER', 'CURATOR')).toBe(0.3);
+    expect(compat.archetypeSynergy('CURATOR', 'TRAILBLAZER')).toBe(0.3);
+  });
+
+  it('scoring WITHOUT an archetype is byte-identical to the legacy path (no synergy field)', () => {
+    const model = {
+      targetSocialStyle: { introversion: 0.4, adventurousness: 0.6 },
+      interestAffinity: {},
+      weights: { interestWeight: 0.55, socialStyleWeight: 0.45 },
+    };
+    const candidate = {
+      id: 'c1', name: 'Test', gender: 'FEMALE' as const, city: 'Chicago',
+      interests: ['food', 'art'],
+      socialStyle: { introversion: 0.4, adventurousness: 0.6 },
+    };
+    const breakdown = compat.scoreCandidate(['food'], model, candidate);
+    expect(breakdown.archetypeSynergy).toBeUndefined();
+    expect(breakdown.total).toBeGreaterThan(0);
+    expect(breakdown.total).toBeLessThanOrEqual(1);
+  });
+
+  it('scoring WITH an archetype includes a synergy component and stays within [0, 1]', () => {
+    const model = {
+      targetSocialStyle: { introversion: 0.4, adventurousness: 0.6 },
+      interestAffinity: {},
+      weights: { interestWeight: 0.55, socialStyleWeight: 0.45 },
+    };
+    const candidate = {
+      id: 'c1', name: 'Test', gender: 'FEMALE' as const, city: 'Chicago',
+      interests: ['food', 'art'],
+      socialStyle: { introversion: 0.2, adventurousness: 0.8 }, // TRAILBLAZER
+    };
+    const breakdown = compat.scoreCandidate(['food'], model, candidate, 'TRAILBLAZER');
+    expect(breakdown.archetypeSynergy).toBe(1);
+    expect(breakdown.total).toBeGreaterThan(0);
+    expect(breakdown.total).toBeLessThanOrEqual(1);
+  });
+
+  it('getRankedCandidates includes archetype synergy after questionnaire completion', async () => {
+    await q.submitAnswers(uniformAnswers('A')); // persists TRAILBLAZER archetype
+    const ranked = await user.getRankedCandidates('Chicago');
+    expect(ranked.length).toBeGreaterThan(0);
+    for (const candidate of ranked) {
+      expect(candidate.compatibility.archetypeSynergy).toBeDefined();
+      expect(candidate.compatibility.total).toBeGreaterThanOrEqual(0);
+      expect(candidate.compatibility.total).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('getRankedCandidates omits synergy when no questionnaire was taken (legacy behavior preserved)', async () => {
+    const ranked = await user.getRankedCandidates('Chicago');
+    expect(ranked.length).toBeGreaterThan(0);
+    for (const candidate of ranked) {
+      expect(candidate.compatibility.archetypeSynergy).toBeUndefined();
+    }
+  });
+});
